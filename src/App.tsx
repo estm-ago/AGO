@@ -18,6 +18,8 @@ export const EchoDemo: React.FC = () => {
     }
   }, [lastMessage]);
 
+  // 資料處理接收
+
   return (
     <div>
       <div>連線狀態：{ReadyState[readyState]}</div>
