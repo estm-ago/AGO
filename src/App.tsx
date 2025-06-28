@@ -1,7 +1,7 @@
 import { Button } from './components/ui/button';
 import useWebSocket from 'react-use-websocket';
 
-import Controller from './components/controller';
+import Controller from './components/Controller';
 // export const EchoDemo: React.FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
 //   const [logs, setLogs] = useState<string[]>([]);
 //   useEffect(() => {
