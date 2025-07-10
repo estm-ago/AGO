@@ -2,6 +2,7 @@ import { CmdB0, CmdB1, CmdB2 } from '../types/vehicle';
 import {
   CMD_B0_DATA,
   CMD_B0_VEHICLE_CONTROL,
+  CMD_B0_ERROR,
   CMD_B1_LEFT_SPEED,
   CMD_B1_RIGHT_SPEED,
   CMD_B1_LEFT_DUTY,
@@ -12,6 +13,7 @@ import {
   CMD_B1_LEFT_SPIN,
   CMD_B1_RIGHT_STOP,
   CMD_B1_RIGHT_SPIN,
+  ERROR_CODES,
   type ReceivedData,
 } from '../types/vehicle';
 
@@ -28,6 +30,31 @@ export function buildCommand(b1: CmdB1, b2: CmdB2, speed: number): Uint8Array {
   return new Uint8Array(buf);
 }
 
+// 構建數據請求命令
+export function buildDataRequestCommand(dataType: number): Uint8Array {
+  const buf = new ArrayBuffer(4);
+  const dv = new DataView(buf);
+  dv.setUint8(0, CMD_B0_DATA); // 數據請求模式
+  dv.setUint8(1, dataType); // 請求的數據類型
+  dv.setUint8(2, 0x00); // 保留字節
+  dv.setUint8(3, 0x00); // 保留字節
+  return new Uint8Array(buf);
+}
+
+// 預定義的數據請求命令
+export const DATA_REQUEST_COMMANDS = {
+  leftSpeed: () => buildDataRequestCommand(CMD_B1_LEFT_SPEED),
+  rightSpeed: () => buildDataRequestCommand(CMD_B1_RIGHT_SPEED),
+  leftDuty: () => buildDataRequestCommand(CMD_B1_LEFT_DUTY),
+  rightDuty: () => buildDataRequestCommand(CMD_B1_RIGHT_DUTY),
+  allMotorData: () => [
+    buildDataRequestCommand(CMD_B1_LEFT_SPEED),
+    buildDataRequestCommand(CMD_B1_RIGHT_SPEED),
+    buildDataRequestCommand(CMD_B1_LEFT_DUTY),
+    buildDataRequestCommand(CMD_B1_RIGHT_DUTY),
+  ],
+};
+
 export function u8ArrayToBool(buf: Uint8Array): boolean {
   if (buf.length === 0) throw new Error('u8ArrayToBool: Empty buffer');
   return buf[0] !== 0;
@@ -35,6 +62,45 @@ export function u8ArrayToBool(buf: Uint8Array): boolean {
 
 export function formatTimestamp(): string {
   return new Date().toLocaleTimeString();
+}
+
+// 檢查數據是否為錯誤訊息
+function isErrorMessage(cmd0: number, rawValue: number): boolean {
+  // 檢查是否為錯誤命令
+  if (cmd0 === CMD_B0_ERROR) {
+    return true;
+  }
+  
+  // 檢查數值是否為異常值（NaN, Infinity, 或超出合理範圍）
+  if (isNaN(rawValue) || !isFinite(rawValue)) {
+    return true;
+  }
+  
+  // 檢查速度值是否在合理範圍內（-1000 到 1000）
+  if (cmd0 === CMD_B0_DATA && Math.abs(rawValue) > 1000) {
+    return true;
+  }
+  
+  return false;
+}
+
+// 驗證數據是否合理
+function isValidData(cmd0: number, cmd1: number, rawValue: number): boolean {
+  if (cmd0 === CMD_B0_DATA) {
+    switch (cmd1) {
+      case CMD_B1_LEFT_DUTY:
+      case CMD_B1_RIGHT_DUTY:
+        // 功率值應該在 0-100 範圍內
+        return rawValue >= 0 && rawValue <= 100;
+      case CMD_B1_LEFT_SPEED:
+      case CMD_B1_RIGHT_SPEED:
+        // 速度值應該在合理範圍內（比如 -500 到 500）
+        return rawValue >= -500 && rawValue <= 500;
+      default:
+        return true;
+    }
+  }
+  return true;
 }
 
 // 解析從ESP32接收到的數據
@@ -58,11 +124,39 @@ export function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
     .map(byte => byte.toString(16).padStart(2, '0').toUpperCase())
     .join('');
 
-  const description = getDataDescription(cmd0, cmd1);
+  // 檢查是否為錯誤訊息
+  const isError = isErrorMessage(cmd0, rawValue);
+  let errorCode: number | undefined;
+  
+  if (isError) {
+    if (cmd0 === CMD_B0_ERROR) {
+      errorCode = cmd1;
+    }
+    console.warn('⚠️ 檢測到錯誤訊息:', {
+      cmd0: cmd0.toString(16),
+      cmd1: cmd1.toString(16),
+      rawValue,
+      errorCode,
+      rawHex
+    });
+  }
+
+  // 檢查數據有效性
+  if (!isError && !isValidData(cmd0, cmd1, rawValue)) {
+    console.warn('⚠️ 數據值超出合理範圍，標記為錯誤:', {
+      cmd0: cmd0.toString(16),
+      cmd1: cmd1.toString(16),
+      rawValue,
+      rawHex
+    });
+    return null; // 直接排除無效數據
+  }
+
+  const description = getDataDescription(cmd0, cmd1, isError, errorCode);
   let parsedValue: number | string = rawValue;
 
-  // 根據命令類型調整解析方式
-  if (cmd0 === CMD_B0_DATA) {
+  // 只有非錯誤數據才進行正常解析
+  if (!isError && cmd0 === CMD_B0_DATA) {
     switch (cmd1) {
       case CMD_B1_LEFT_DUTY:
       case CMD_B1_RIGHT_DUTY:
@@ -77,6 +171,8 @@ export function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
       default:
         parsedValue = rawValue;
     }
+  } else if (isError) {
+    parsedValue = `錯誤: ${getErrorDescription(errorCode)}`;
   }
 
   return {
@@ -88,11 +184,20 @@ export function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
     parsedValue,
     description,
     rawHex,
+    isError,
+    errorCode,
   };
 }
 
 // 根據命令獲取描述
-function getDataDescription(cmd0: number, cmd1: number): string {
+function getDataDescription(cmd0: number, cmd1: number, isError: boolean = false, errorCode?: number): string {
+  if (isError) {
+    if (cmd0 === CMD_B0_ERROR) {
+      return `系統錯誤 (${getErrorDescription(errorCode)})`;
+    }
+    return '數據錯誤';
+  }
+  
   if (cmd0 === CMD_B0_DATA) {
     switch (cmd1) {
       case CMD_B1_LEFT_SPEED:
@@ -126,6 +231,28 @@ function getDataDescription(cmd0: number, cmd1: number): string {
   }
   
   return '未知命令';
+}
+
+// 獲取錯誤描述
+function getErrorDescription(errorCode?: number): string {
+  if (!errorCode) return '未知錯誤';
+  
+  switch (errorCode) {
+    case ERROR_CODES.SENSOR_FAILURE:
+      return '感測器故障';
+    case ERROR_CODES.MOTOR_FAILURE:
+      return '馬達故障';
+    case ERROR_CODES.COMMUNICATION_ERROR:
+      return '通訊錯誤';
+    case ERROR_CODES.POWER_LOW:
+      return '電力不足';
+    case ERROR_CODES.OVERHEATING:
+      return '過熱保護';
+    case ERROR_CODES.UNKNOWN_COMMAND:
+      return '未知命令';
+    default:
+      return `錯誤代碼: ${errorCode}`;
+  }
 }
 
 // 將Uint8Array轉換為16進制字符串
