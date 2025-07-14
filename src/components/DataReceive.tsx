@@ -7,6 +7,7 @@ import { ReceivedDataPanel } from './ReceivedDataPanel';
 import { DataStatisticsPanel } from './DataStatisticsPanel';
 import { DATA_REQUEST_COMMANDS } from '@/utils/BuildCommand';
 import { parseReceivedData, uint8ArrayToHex } from '@/utils';
+import { c } from 'node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf';
 
 const DataReceive: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
   const { 
@@ -78,41 +79,45 @@ const DataReceive: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }
     const data = lastMessage.data;
     
     // 處理二進制數據 (ArrayBuffer 或 Blob)
-    if (data instanceof ArrayBuffer) {
-      const parsedData = parseReceivedData(data);
-      if (parsedData) {
-        addReceivedData(parsedData);
-        updateStatistics(parsedData);
-        logReceivedData(data, parsedData);
-      }
-    } else if (data instanceof Blob) {
-      data.arrayBuffer().then((buffer) => {
-        const parsedData = parseReceivedData(buffer);
+    try {
+      if (data instanceof ArrayBuffer) {
+        const parsedData = parseReceivedData(data);
         if (parsedData) {
           addReceivedData(parsedData);
           updateStatistics(parsedData);
-          logReceivedData(buffer, parsedData);
+          logReceivedData(data, parsedData);
         }
-      });
-    } else if (typeof data === 'string') {
-      // 如果收到字符串數據，嘗試解析為16進制
-      try {
-        const hexString = data.replace(/\s/g, '');
-        if (hexString.length % 2 === 0 && /^[0-9A-Fa-f]+$/.test(hexString)) {
-          const bytes = new Uint8Array(hexString.length / 2);
-          for (let i = 0; i < hexString.length; i += 2) {
-            bytes[i / 2] = parseInt(hexString.substr(i, 2), 16);
-          }
-          const parsedData = parseReceivedData(bytes.buffer);
+      } else if (data instanceof Blob) {
+        data.arrayBuffer().then((buffer) => {
+          const parsedData = parseReceivedData(buffer);
           if (parsedData) {
             addReceivedData(parsedData);
             updateStatistics(parsedData);
-            logReceivedData(bytes.buffer, parsedData);
+            logReceivedData(buffer, parsedData);
           }
+        });
+      } else if (typeof data === 'string') {
+        // 如果收到字符串數據，嘗試解析為16進制
+        try {
+          const hexString = data.replace(/\s/g, '');
+          if (hexString.length % 2 === 0 && /^[0-9A-Fa-f]+$/.test(hexString)) {
+            const bytes = new Uint8Array(hexString.length / 2);
+            for (let i = 0; i < hexString.length; i += 2) {
+              bytes[i / 2] = parseInt(hexString.substring(i, i + 2), 16);
+            }
+            const parsedData = parseReceivedData(bytes.buffer);
+            if (parsedData) {
+              addReceivedData(parsedData);
+              updateStatistics(parsedData);
+              logReceivedData(bytes.buffer, parsedData);
+            }
+          }
+        } catch (error) {
+          console.warn('無法解析字符串數據:', data, error);
         }
-      } catch (error) {
-        console.warn('無法解析字符串數據:', data, error);
       }
+    } catch (error) {
+      console.warn('處理接收數據時發生錯誤:', error);
     }
   }, [lastMessage, addReceivedData, updateStatistics]);
 

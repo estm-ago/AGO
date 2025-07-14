@@ -6,7 +6,7 @@ interface ReceivedData {
   cmd1: number;
   rawValue: number;
   parsedValue: number | string;
-  description: string;
+
   rawHex: string;
   isError: boolean;
   errorCode?: number;

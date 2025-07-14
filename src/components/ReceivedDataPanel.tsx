@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Database, Trash2, Activity } from 'lucide-react';
-import { type ReceivedData } from '../types/vehicle';
+import type { ReceivedData } from '@/types';
+
 
 interface ReceivedDataPanelProps {
   receivedData: ReceivedData[];
@@ -94,9 +95,9 @@ export const ReceivedDataPanel: FC<ReceivedDataPanelProps> = ({
                       <Badge variant='outline' className='text-xs'>
                         {data.timestamp}
                       </Badge>
-                      <Badge className='text-xs'>
+                      {/* <Badge className='text-xs'>
                         {data.description}
-                      </Badge>
+                      </Badge> */}
                     </div>
                     <div className='grid grid-cols-1 md:grid-cols-3 gap-2 text-sm'>
                       <div>

@@ -8,7 +8,7 @@ function concatUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
   }
   return result;
 }
-import { type CmdB0Type, type CmdB1Type, type CmdB2Type, type ReceivedData, CmdB0, CmdB1, CmdB2 } from '@/types';
+import { type CmdB0Type, type CmdB1Type, type ReceivedData, CmdB0, CmdB1} from '@/types';
 
 // 預定義的數據請求命令
 
@@ -62,12 +62,12 @@ function isValidData(cmd0: number, cmd1: number, rawValue: number): boolean {
 }
 
 // 解析從ESP32接收到的數據
-function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
+function parseReceivedData(buffer: ArrayBuffer): ReceivedData {
   const u8Array = new Uint8Array(buffer);
 
   if (u8Array.length < 6) {
     console.warn('收到的數據長度不足:', u8Array.length);
-    return null;
+    throw new Error(`Received data is too short: ${u8Array.length} bytes`);
   }
 
   const cmd0 = u8Array[0];
@@ -102,7 +102,7 @@ function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
       rawValue,
       rawHex,
     });
-    return null; // 直接排除無效數據
+    throw new Error(`Invalid data received: cmd0=${cmd0}, cmd1=${cmd1}, rawValue=${rawValue}`);
   }
 
   // const description = getDataDescription(cmd0, cmd1, isError, errorCode);
@@ -110,8 +110,6 @@ function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
   const description = getDataDescription(
     cmd0 as CmdB0Type,
     cmd1 as CmdB1Type,
-    cmd2mode as CmdB2Type<'Mode'>,
-    cmd2motion as CmdB2Type<'Motion'>
   );
   let parsedValue: number | string = rawValue;
 
@@ -144,7 +142,6 @@ function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
     cmd1,
     rawValue,
     parsedValue,
-    description,
     rawHex,
     isError,
     // errorCode,
@@ -155,8 +152,6 @@ function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
 function getDataDescription(
   cmd0: CmdB0Type,
   cmd1: CmdB1Type,
-  cmd2mode: CmdB2Type<'Mode'>,
-  cmd2motion: CmdB2Type<'Motion'>,
   // isError: boolean = false,
   // errorCode?: number,
 ): string {
@@ -180,23 +175,8 @@ function getDataDescription(
       default:
         return '未知數據類型';
     }
-  } else if (cmd0 === CmdB0.VehicleControl) {
-    switch (cmd2mode || cmd2motion) {
-      case CmdB2.Motion.Stop:
-        return '車輛停止';
-      case CmdB2.Motion.Forward:
-        return '車輛移動';
-      case CmdB2.Motion.Left:
-        return '車輛左轉';
-      case CmdB2.Motion.Right:
-        return '車輛右轉';
-      case CmdB2.Mode.Free:
-        return '自由模式';
-      case CmdB2.Mode.Track:
-        return '循跡模式';
-      default:
-        return '未知控制命令';
-    }
+  } else {
+    
   }
 
   return '未知命令';
