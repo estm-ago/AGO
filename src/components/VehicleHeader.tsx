@@ -2,7 +2,7 @@ import { type FC } from 'react';
 import { Card, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Settings } from 'lucide-react';
-import { type ConnectionStatus } from '../types/vehicle';
+import type { ConnectionStatus } from '@/types';
 
 interface VehicleHeaderProps {
   connectionStatus: ConnectionStatus;

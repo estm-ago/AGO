@@ -1,6 +1,6 @@
 import { CmdB1, CmdB2 } from '@/types';
 import { concatUint8Arrays } from '@/utils';
-import { buildCarCommand } from '@/utils/vehicle';
+import { buildCarCommand } from '@/utils/BuildCommand';
 
 function BufferShow(name: string, cmd: Uint8Array) {
   console.log(

@@ -1,8 +1,6 @@
 import { useEffect, type FC } from 'react';
 import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 import { ReadyState } from 'react-use-websocket';
-import { CmdB0, CmdB1, CmdB2 } from '../types/vehicle';
-import { buildCommand, concatUint8Arrays, u8ArrayToBool } from '../utils/vehicle';
 import { useVehicleStatus } from '../hooks/useVehicleStatus';
 import { useVehicleLogs } from '../hooks/useVehicleLogs';
 import { VehicleHeader } from './VehicleHeader';
@@ -10,6 +8,9 @@ import { DirectionControls } from './DirectionControls';
 import { SpeedControl } from './SpeedControl';
 import { VehicleStatusPanel } from './VehicleStatusPanel';
 import { SystemLogs } from './SystemLogs';
+import { concatUint8Arrays, u8ArrayToBool } from '@/utils';
+import { CmdB0, CmdB1, CmdB2, type CmdB2Type } from '@/types';
+import { buildCarCommand } from '@/utils/BuildCommand';
 
 const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
   const {
@@ -36,24 +37,24 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
   }, [lastMessage, addLog]);
 
   interface CommandOpts {
-    mode?: CmdB2<'Mode'>;
-    motion?: CmdB2<'Motion'>;
+    mode?: CmdB2Type<'Mode'>;
+    motion?: CmdB2Type<'Motion'>;
     speed?: number;
     direction: string;
   }
 
   const sendCarCommand = (opts: CommandOpts) => {
-    let CarController = CmdB0.VehicleControl;
     if (readyState !== ReadyState.OPEN) return;
     const buffers: Uint8Array[] = [];
-    if (opts.mode !== undefined) {
-      buffers.push(buildCommand(CarController, CmdB1.Mode, opts.mode));
-    }
+
     if (opts.motion !== undefined) {
-      buffers.push(buildCommand(CarController, CmdB1.Motion, opts.motion));
+      buffers.push(buildCarCommand(CmdB1.Motion, opts.motion));
     }
     if (opts.speed !== undefined) {
-      buffers.push(buildCommand(CarController, CmdB1.Speed, opts.speed));
+      buffers.push(buildCarCommand(CmdB1.Speed, opts.speed));
+    }
+    if (opts.mode !== undefined) {
+      buffers.push(buildCarCommand(CmdB1.Mode, opts.mode));
     }
     const all = concatUint8Arrays(...buffers);
     sendMessage(all.buffer);
