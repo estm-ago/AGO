@@ -17,7 +17,7 @@ export type {
   CmdB0Type,
   CmdB1Type,
   CmdB2Type,
-  //   ErrorType,
+  // ErrorType,
   BuildCarCommandArgs,
   ArgTypeMap,
   DataRequestType,

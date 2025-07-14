@@ -1,7 +1,7 @@
 const CmdB0 = {
   VehicleControl: 0x21,
   WheelControl: 0x20,
-  DataControll: 0x10,
+  DataControl: 0x10,
   Error: 0xff,
 } as const;
 

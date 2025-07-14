@@ -30,7 +30,7 @@ function buildCarCommand(...args: BuildCarCommandArgs): Uint8Array {
 function buildDataRequestCommand(dataType: DataRequestType): Uint8Array {
   const buf = new ArrayBuffer(4);
   const dv = new DataView(buf);
-  dv.setUint8(0, CmdB0.DataControll); // 數據請求模式
+  dv.setUint8(0, CmdB0.DataControl); // 數據請求模式
   dv.setUint8(1, dataType); // 請求的數據類型
   return new Uint8Array(buf);
 }

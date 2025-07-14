@@ -8,7 +8,7 @@ function concatUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
   }
   return result;
 }
-import { type CmdB0Type, type CmdB1Type, type ReceivedData, CmdB0, CmdB1 } from '@/types';
+import { type CmdB0Type, type CmdB1Type, type CmdB2Type, type ReceivedData, CmdB0, CmdB1, CmdB2 } from '@/types';
 
 // 預定義的數據請求命令
 
@@ -23,10 +23,10 @@ function formatTimestamp(): string {
 
 // 檢查數據是否為錯誤訊息
 function isErrorMessage(cmd0: number, rawValue: number): boolean {
-  // 檢查是否為錯誤命令
-  if (cmd0 === CMD_B0_ERROR) {
-    return true;
-  }
+  // // 檢查是否為錯誤命令
+  // if (cmd0 === CMD_B0_ERROR) {
+  //   return true;
+  // }
 
   // 檢查數值是否為異常值（NaN, Infinity, 或超出合理範圍）
   if (isNaN(rawValue) || !isFinite(rawValue)) {
@@ -34,7 +34,8 @@ function isErrorMessage(cmd0: number, rawValue: number): boolean {
   }
 
   // 檢查速度值是否在合理範圍內（-1000 到 1000）
-  if (cmd0 === CMD_B0_DATA && Math.abs(rawValue) > 1000) {
+  if (Math.abs(rawValue) > 1000) {
+  // if (cmd0 === CMD_B0_DATA && Math.abs(rawValue) > 1000) {
     return true;
   }
 
@@ -43,7 +44,7 @@ function isErrorMessage(cmd0: number, rawValue: number): boolean {
 
 // 驗證數據是否合理
 function isValidData(cmd0: number, cmd1: number, rawValue: number): boolean {
-  if (cmd0 === CmdB0.DataControll) {
+  if (cmd0 === CmdB0.DataControl) {
     switch (cmd1) {
       case CmdB1.LeftDuty:
       case CmdB1.RightDuty:
@@ -105,19 +106,26 @@ function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
   }
 
   // const description = getDataDescription(cmd0, cmd1, isError, errorCode);
-  const description = getDataDescription(cmd0, cmd1);
+  // Extract cmd2mode and cmd2motion if available, otherwise set as undefined
+  const description = getDataDescription(
+    cmd0 as CmdB0Type,
+    cmd1 as CmdB1Type,
+    cmd2mode as CmdB2Type<'Mode'>,
+    cmd2motion as CmdB2Type<'Motion'>
+  );
   let parsedValue: number | string = rawValue;
 
   // 只有非錯誤數據才進行正常解析
-  if (!isError && cmd0 === CMD_B0_DATA) {
+  // if (!isError && cmd0 === CMD_B0_DATA) {
+  if (!isError) {
     switch (cmd1) {
-      case CMD_B1_LEFT_DUTY:
-      case CMD_B1_RIGHT_DUTY:
+      case CmdB1.LeftDuty:
+      case CmdB1.RightDuty:
         // 功率值通常是0-100的整數
         parsedValue = Math.round(rawValue);
         break;
-      case CMD_B1_LEFT_SPEED:
-      case CMD_B1_RIGHT_SPEED:
+      case CmdB1.LeftSpeed:
+      case CmdB1.RightSpeed:
         // 速度值保持float精度
         parsedValue = parseFloat(rawValue.toFixed(2));
         break;
@@ -139,7 +147,7 @@ function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
     description,
     rawHex,
     isError,
-    errorCode,
+    // errorCode,
   };
 }
 
@@ -147,6 +155,8 @@ function parseReceivedData(buffer: ArrayBuffer): ReceivedData | null {
 function getDataDescription(
   cmd0: CmdB0Type,
   cmd1: CmdB1Type,
+  cmd2mode: CmdB2Type<'Mode'>,
+  cmd2motion: CmdB2Type<'Motion'>,
   // isError: boolean = false,
   // errorCode?: number,
 ): string {
@@ -157,33 +167,33 @@ function getDataDescription(
   //   return '數據錯誤';
   // }
 
-  if (cmd0 === CmdB0.DataControll) {
+  if (cmd0 === CmdB0.DataControl) {
     switch (cmd1) {
-      case CMD_B1_LEFT_SPEED:
+      case CmdB1.LeftSpeed:
         return '左馬達速度';
-      case CMD_B1_RIGHT_SPEED:
+      case CmdB1.RightSpeed:
         return '右馬達速度';
-      case CMD_B1_LEFT_DUTY:
+      case CmdB1.LeftDuty:
         return '左馬達功率';
-      case CMD_B1_RIGHT_DUTY:
+      case CmdB1.RightDuty:
         return '右馬達功率';
       default:
         return '未知數據類型';
     }
   } else if (cmd0 === CmdB0.VehicleControl) {
-    switch (cmd1) {
-      case CMD_B1_VEHICLE_STOP:
+    switch (cmd2mode || cmd2motion) {
+      case CmdB2.Motion.Stop:
         return '車輛停止';
-      case CMD_B1_VEHICLE_MOVE:
+      case CmdB2.Motion.Forward:
         return '車輛移動';
-      case CMD_B1_LEFT_STOP:
-        return '左馬達停止';
-      case CMD_B1_LEFT_SPIN:
-        return '左馬達旋轉';
-      case CMD_B1_RIGHT_STOP:
-        return '右馬達停止';
-      case CMD_B1_RIGHT_SPIN:
-        return '右馬達旋轉';
+      case CmdB2.Motion.Left:
+        return '車輛左轉';
+      case CmdB2.Motion.Right:
+        return '車輛右轉';
+      case CmdB2.Mode.Free:
+        return '自由模式';
+      case CmdB2.Mode.Track:
+        return '循跡模式';
       default:
         return '未知控制命令';
     }
