@@ -9,8 +9,8 @@ import { SpeedControl } from './SpeedControl';
 import { VehicleStatusPanel } from './VehicleStatusPanel';
 import { SystemLogs } from './SystemLogs';
 import { concatUint8Arrays, u8ArrayToBool } from '@/utils';
-import { CmdB0, CmdB1, CmdB2, type CmdB2Type } from '@/types';
-import { buildCarCommand } from '@/utils/BuildCommand';
+import { type CarCommandOpts, type ControllerType, type MotorCommandOpts } from '@/types';
+import { buildCommand } from '@/utils/BuildCommand';
 
 const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
   const {
@@ -36,94 +36,160 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     }
   }, [lastMessage, addLog]);
 
-  interface CommandOpts {
-    mode?: CmdB2Type<'Mode'>;
-    motion?: CmdB2Type<'Motion'>;
-    speed?: number;
-    direction: string;
-  }
-
-  const sendCarCommand = (opts: CommandOpts) => {
+  const sendCarCommand = (opts: CarCommandOpts) => {
     if (readyState !== ReadyState.OPEN) return;
+    let CarController = 'VehicleControl' as ControllerType;
     const buffers: Uint8Array[] = [];
 
     if (opts.motion !== undefined) {
-      buffers.push(buildCarCommand(CmdB1.Motion, opts.motion));
+      buffers.push(
+        buildCommand({
+          control: CarController,
+          b1: 'Motion',
+          arg: opts.motion,
+        }),
+      );
     }
     if (opts.speed !== undefined) {
-      buffers.push(buildCarCommand(CmdB1.Speed, opts.speed));
+      buffers.push(
+        buildCommand({
+          control: CarController,
+          b1: 'Speed',
+          arg: opts.speed,
+        }),
+      );
     }
     if (opts.mode !== undefined) {
-      buffers.push(buildCarCommand(CmdB1.Mode, opts.mode));
+      buffers.push(
+        buildCommand({
+          control: CarController,
+          b1: 'Mode',
+          arg: opts.mode,
+        }),
+      );
     }
     const all = concatUint8Arrays(...buffers);
     sendMessage(all.buffer);
-    const moving = opts.motion !== CmdB2.Motion.Stop;
+    const moving = opts.motion !== undefined && opts.motion !== 'Stop';
     updateMovementStatus(moving, opts.direction);
   };
-  const sendMotorCommand = (opts: CommandOpts) => {
-    let CarController = CmdB0.VehicleControl;
+
+  const sendMotorCommand = (opts: MotorCommandOpts) => {
+    let CarController = 'WheelControl' as ControllerType;
     if (readyState !== ReadyState.OPEN) return;
     const buffers: Uint8Array[] = [];
-    if (opts.mode !== undefined) {
-      buffers.push(buildCommand(CarController, CmdB1.Mode, opts.mode));
-    }
     if (opts.motion !== undefined) {
-      buffers.push(buildCommand(CarController, CmdB1.Motion, opts.motion));
+      buffers.push(
+        buildCommand({
+          control: CarController,
+          motor: opts.motor,
+          b1: 'Motion',
+          arg: opts.motion,
+        }),
+      );
     }
     if (opts.speed !== undefined) {
-      buffers.push(buildCommand(CarController, CmdB1.Speed, opts.speed));
+      buffers.push(
+        buildCommand({
+          control: CarController,
+          motor: opts.motor,
+          b1: 'Speed',
+          arg: opts.speed,
+        }),
+      );
     }
+    buffers.push(
+      buildCommand({
+        control: CarController,
+        motor: opts.motor,
+        b1: 'Mode',
+        arg: 'Free',
+      }),
+    );
     const all = concatUint8Arrays(...buffers);
     sendMessage(all.buffer);
-    const moving = opts.motion !== CmdB2.Motion.Stop;
+    const moving = opts.motion !== undefined && opts.motion !== 'Stop';
     updateMovementStatus(moving, opts.direction);
   };
 
   const handleStop = () => {
-    sendCarCommand({ mode: CmdB2.Mode.Free, direction: '停止', motion: CmdB2.Motion.Stop });
+    sendCarCommand({
+      mode: 'Free',
+      direction: '停止',
+      motion: 'Stop',
+    });
   };
 
   const handleForward = () => {
     sendCarCommand({
       direction: '前進',
-      motion: CmdB2.Motion.Forward,
+      motion: 'Forward',
       speed,
-      mode: CmdB2.Mode.Free,
+      mode: 'Free',
     });
   };
 
   const handleBackward = () => {
     sendCarCommand({
       direction: '後退',
-      motion: CmdB2.Motion.Backward,
+      motion: 'Backward',
       speed,
-      mode: CmdB2.Mode.Free,
+      mode: 'Free',
     });
   };
 
   const handleLeft = () => {
-    sendCarCommand({ mode: CmdB2.Mode.Free, motion: CmdB2.Motion.Left, speed, direction: '左轉' });
+    sendCarCommand({
+      mode: 'Free',
+      motion: 'Left',
+      speed,
+      direction: '左轉',
+    });
   };
 
   const handleRight = () => {
-    sendCarCommand({ mode: CmdB2.Mode.Free, motion: CmdB2.Motion.Right, speed, direction: '右轉' });
+    sendCarCommand({
+      mode: 'Free',
+      motion: 'Right',
+      speed,
+      direction: '右轉',
+    });
   };
 
   const handleLeftSpinForward = () => {
-    sendMotorCommand(CmdB1.Left, CmdB2.Forward, speed, '左正轉');
+    sendMotorCommand({
+      motor: 'Wheel_Left',
+      motion: 'Forward',
+      speed,
+      direction: '左正轉',
+    });
   };
 
   const handleRightSpinForward = () => {
-    sendCommand(CmdB1.Right, CmdB2.Forward, speed, '右正轉');
+    sendMotorCommand({
+      motor: 'Wheel_Right',
+      motion: 'Forward',
+      speed,
+      direction: '右正轉',
+    });
   };
 
   const handleLeftSpinBack = () => {
-    sendCommand(CmdB1.Left, CmdB2.Backward, speed, '左反轉');
+    sendMotorCommand({
+      motor: 'Wheel_Left',
+      motion: 'Backward',
+      speed,
+      direction: '左反轉',
+    });
   };
 
   const handleRightSpinBack = () => {
-    sendCommand(CmdB1.Right, CmdB2.Backward, speed, '右反轉');
+    sendMotorCommand({
+      motor: 'Wheel_Right',
+      motion: 'Backward',
+      speed,
+      direction: '右反轉',
+    });
   };
 
   const connectionStatus = getConnectionStatus(readyState);

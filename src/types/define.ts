@@ -13,6 +13,8 @@ const CmdB1 = {
   RightSpeed: 0x11,
   LeftDuty: 0x20,
   RightDuty: 0x21,
+  Wheel_Left: 0x01,
+  Wheel_Right: 0x02,
 } as const;
 
 const CmdB2 = {

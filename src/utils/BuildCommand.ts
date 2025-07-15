@@ -1,28 +1,41 @@
 import {
   CmdB0,
   CmdB1,
-  type ArgTypeMap,
-  type BuildCarCommandArgs,
+  CmdB2,
+  type CmdB2Type,
+  type ControllerType,
   type DataRequestType,
 } from '@/types';
 
-function buildCarCommand<C extends keyof ArgTypeMap>(
-  b1: (typeof CmdB1)[C],
-  arg: ArgTypeMap[C],
-): Uint8Array;
-function buildCarCommand(...args: BuildCarCommandArgs): Uint8Array {
-  const [b1, arg2] = args;
-  if (b1 === CmdB1.Speed) {
-    const speed = arg2 as number;
+interface BuildCommandArgs<B extends Extract<keyof typeof CmdB1, 'Mode' | 'Motion' | 'Speed'>> {
+  control: ControllerType;
+  b1: B;
+  arg: CmdB2Type<B>;
+  motor?: Extract<keyof typeof CmdB1, 'Wheel_Left' | 'Wheel_Right'>;
+}
+
+function buildCommand<B extends Extract<keyof typeof CmdB1, 'Mode' | 'Motion' | 'Speed'>>(
+  options: BuildCommandArgs<B>,
+): Uint8Array {
+  const { control, b1, arg, motor } = options;
+  let speed_or_arg = b1 === 'Speed' ? arg : CmdB2[b1]?.[arg as keyof (typeof CmdB2)[typeof b1]];
+  const buf = new ArrayBuffer(8);
+  const dv = new DataView(buf);
+  dv.setUint8(0, CmdB0[control]);
+  if (control === 'VehicleControl' && motor === undefined) {
+    dv.setUint8(1, CmdB1[b1]);
+    dv.setUint8(2, speed_or_arg as number);
+  } else if (control === 'WheelControl' && motor) {
+    dv.setUint8(1, CmdB1[motor]);
+    dv.setUint8(2, CmdB1[b1]);
+  }
+  if (b1 === 'Speed') {
+    const speed = speed_or_arg as number;
     if (speed < 0 || speed > 100) {
       throw new RangeError('Speed must be between 0 and 100');
     }
+    motor === undefined ? dv.setUint8(2, speed) : dv.setUint8(3, speed);
   }
-  const buf = new ArrayBuffer(8);
-  const dv = new DataView(buf);
-  dv.setUint8(0, CmdB0.VehicleControl);
-  dv.setUint8(1, b1);
-  dv.setUint8(2, arg2 as number);
   return new Uint8Array(buf);
 }
 
@@ -48,4 +61,4 @@ const DATA_REQUEST_COMMANDS = {
   ],
 };
 
-export { buildCarCommand, buildDataRequestCommand, DATA_REQUEST_COMMANDS };
+export { buildCommand, buildDataRequestCommand, DATA_REQUEST_COMMANDS };

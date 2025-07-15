@@ -8,7 +8,7 @@ function concatUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
   }
   return result;
 }
-import { type CmdB0Type, type CmdB1Type, type ReceivedData, CmdB0, CmdB1} from '@/types';
+import { type CmdB0Type, type CmdB1Type, type ReceivedData, CmdB0, CmdB1 } from '@/types';
 
 // 預定義的數據請求命令
 
@@ -35,7 +35,7 @@ function isErrorMessage(cmd0: number, rawValue: number): boolean {
 
   // 檢查速度值是否在合理範圍內（-1000 到 1000）
   if (Math.abs(rawValue) > 1000) {
-  // if (cmd0 === CMD_B0_DATA && Math.abs(rawValue) > 1000) {
+    // if (cmd0 === CMD_B0_DATA && Math.abs(rawValue) > 1000) {
     return true;
   }
 
@@ -107,10 +107,7 @@ function parseReceivedData(buffer: ArrayBuffer): ReceivedData {
 
   // const description = getDataDescription(cmd0, cmd1, isError, errorCode);
   // Extract cmd2mode and cmd2motion if available, otherwise set as undefined
-  const description = getDataDescription(
-    cmd0 as CmdB0Type,
-    cmd1 as CmdB1Type,
-  );
+  const description = getDataDescription(cmd0 as CmdB0Type, cmd1 as CmdB1Type);
   let parsedValue: number | string = rawValue;
 
   // 只有非錯誤數據才進行正常解析
@@ -176,7 +173,6 @@ function getDataDescription(
         return '未知數據類型';
     }
   } else {
-    
   }
 
   return '未知命令';
