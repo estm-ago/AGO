@@ -1,12 +1,10 @@
 import { useEffect, useRef, type FC } from 'react';
 import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 import { ReadyState } from 'react-use-websocket';
-import { useDataReceive } from '../hooks/useDataReceive';
-import { useDataStatistics } from '../hooks/useDataStatistics';
 import { ReceivedDataPanel } from './ReceivedDataPanel';
 import { DataStatisticsPanel } from './DataStatisticsPanel';
-import { DATA_REQUEST_COMMANDS } from '@/utils/BuildCommand';
-import { parseReceivedData, uint8ArrayToHex } from '@/utils';
+import { DATA_REQUEST_COMMANDS, parseReceivedData, uint8ArrayToHex } from '@/utils';
+import { useDataReceive, useDataStatistics } from '@/hooks';
 
 const DataReceive: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
   const {

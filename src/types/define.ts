@@ -2,6 +2,7 @@ const CmdB0 = {
   VehicleControl: 0x21,
   WheelControl: 0x20,
   DataControl: 0x10,
+  ArmControl: 0x31,
   Error: 0xff,
 } as const;
 
@@ -15,6 +16,16 @@ const CmdB1 = {
   RightDuty: 0x21,
   Wheel_Left: 0x01,
   Wheel_Right: 0x02,
+} as const;
+
+const ArmCmdB1 = {
+  Buttom: 0x00,
+  Shoulder: 0x01,
+  Elbow_Btm: 0x02,
+  Elbow_Top: 0x03,
+  Wrist: 0x04,
+  Finger: 0x05,
+  Arm: 0x10,
 } as const;
 
 const CmdB2 = {
@@ -32,6 +43,11 @@ const CmdB2 = {
   Speed: {},
 } as const;
 
+const ArmCmdB2 = {
+  Stop: 0x00,
+  Set: 0x01,
+} as const;
+
 // 錯誤類型定義
 // const ERROR_CODES = {
 //   SENSOR_FAILURE: 0x01,
@@ -42,4 +58,4 @@ const CmdB2 = {
 //   UNKNOWN_COMMAND: 0x06,
 // } as const;
 
-export { CmdB0, CmdB1, CmdB2 };
+export { CmdB0, CmdB1, CmdB2, ArmCmdB1, ArmCmdB2 };

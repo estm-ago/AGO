@@ -1,5 +1,5 @@
 import { type FC } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Gauge } from 'lucide-react';
 
 interface SpeedControlProps {

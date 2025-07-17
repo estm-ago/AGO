@@ -1,10 +1,9 @@
 import { type FC } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 import { Database, Trash2, Activity } from 'lucide-react';
 import type { ReceivedData } from '@/types';
-
 
 interface ReceivedDataPanelProps {
   receivedData: ReceivedData[];
@@ -48,15 +47,11 @@ export const ReceivedDataPanel: FC<ReceivedDataPanelProps> = ({
             </div>
             <div className='text-center p-3 bg-orange-50 rounded-lg'>
               <div className='text-sm text-gray-600'>左馬達功率</div>
-              <div className='text-lg font-bold text-orange-600'>
-                {latestMotorData.leftDuty}%
-              </div>
+              <div className='text-lg font-bold text-orange-600'>{latestMotorData.leftDuty}%</div>
             </div>
             <div className='text-center p-3 bg-purple-50 rounded-lg'>
               <div className='text-sm text-gray-600'>右馬達功率</div>
-              <div className='text-lg font-bold text-purple-600'>
-                {latestMotorData.rightDuty}%
-              </div>
+              <div className='text-lg font-bold text-purple-600'>{latestMotorData.rightDuty}%</div>
             </div>
           </div>
         </CardContent>
@@ -103,21 +98,17 @@ export const ReceivedDataPanel: FC<ReceivedDataPanelProps> = ({
                       <div>
                         <span className='text-gray-600'>命令:</span>
                         <span className='ml-2 font-mono'>
-                          {data.cmd0.toString(16).padStart(2, '0').toUpperCase()} 
+                          {data.cmd0.toString(16).padStart(2, '0').toUpperCase()}
                           {data.cmd1.toString(16).padStart(2, '0').toUpperCase()}
                         </span>
                       </div>
                       <div>
                         <span className='text-gray-600'>數值:</span>
-                        <span className='ml-2 font-bold text-blue-600'>
-                          {data.parsedValue}
-                        </span>
+                        <span className='ml-2 font-bold text-blue-600'>{data.parsedValue}</span>
                       </div>
                       <div>
                         <span className='text-gray-600'>原始:</span>
-                        <span className='ml-2 font-mono text-xs'>
-                          {data.rawHex}
-                        </span>
+                        <span className='ml-2 font-mono text-xs'>{data.rawHex}</span>
                       </div>
                     </div>
                   </div>
@@ -129,4 +120,4 @@ export const ReceivedDataPanel: FC<ReceivedDataPanelProps> = ({
       </Card>
     </div>
   );
-}; 
+};
