@@ -1,12 +1,13 @@
 import {
+  ArmCmdB2,
   CmdB0,
   CmdB1,
   CmdB2,
+  type BuildRobotCommandArgs,
   type CmdB2Type,
   type ControllerType,
   type DataRequestType,
 } from '@/types';
-
 interface BuildCommandArgs<B extends Extract<keyof typeof CmdB1, 'Mode' | 'Motion' | 'Speed'>> {
   control: ControllerType;
   b1: B;
@@ -39,6 +40,22 @@ function buildCommand<B extends Extract<keyof typeof CmdB1, 'Mode' | 'Motion' | 
   return new Uint8Array(buf);
 }
 
+function buildRobotCommand(opts: BuildRobotCommandArgs): Uint8Array {
+  const { b1, b2, value } = opts;
+  const buf = new ArrayBuffer(8);
+  const dv = new DataView(buf);
+  dv.setUint8(0, CmdB0.ArmControl);
+  dv.setUint8(1, b1);
+  dv.setUint8(2, b2);
+  if (b2 === ArmCmdB2.Set && value !== undefined) {
+    if (value < 0 || value > 100) {
+      throw new RangeError('Value must be between 0 and 100');
+    }
+    dv.setUint8(3, value);
+  }
+  return new Uint8Array(buf);
+}
+
 // 構建數據請求命令
 function buildDataRequestCommand(dataType: DataRequestType): Uint8Array {
   const buf = new ArrayBuffer(4);
@@ -61,4 +78,4 @@ const DATA_REQUEST_COMMANDS = {
   ],
 };
 
-export { buildCommand, buildDataRequestCommand, DATA_REQUEST_COMMANDS };
+export { buildCommand, buildDataRequestCommand, DATA_REQUEST_COMMANDS, buildRobotCommand };
