@@ -1,5 +1,6 @@
+import { ArmCmdB1, ArmCmdB2 } from '@/types';
 import { concatUint8Arrays } from '@/utils';
-import { buildCommand } from '@/utils/BuildCommand';
+import { buildCommand, buildRobotCommand } from '@/utils/BuildCommand';
 
 function BufferShow(name: string, cmd: Uint8Array) {
   console.log(
@@ -73,6 +74,13 @@ const Test = () => {
   all = concatUint8Arrays(...buffers);
   buffers.length = 0; // 清空緩衝區
   BufferShow('MotorControl: ', all);
+
+  const robotCommand = buildRobotCommand({
+    b1: ArmCmdB1.Buttom,
+    b2: ArmCmdB2.Set,
+    value: 40,
+  });
+  BufferShow('RobotCommand: ', robotCommand);
 
   return <div>Text</div>;
 };

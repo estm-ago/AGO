@@ -1,8 +1,6 @@
 import { useEffect, type FC } from 'react';
 import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 import { ReadyState } from 'react-use-websocket';
-import { useVehicleStatus } from '../hooks/useVehicleStatus';
-import { useVehicleLogs } from '../hooks/useVehicleLogs';
 import { VehicleHeader } from './VehicleHeader';
 import { DirectionControls } from './DirectionControls';
 import { SpeedControl } from './SpeedControl';
@@ -11,6 +9,7 @@ import { SystemLogs } from './SystemLogs';
 import { concatUint8Arrays, u8ArrayToBool } from '@/utils';
 import { type CarCommandOpts, type ControllerType, type MotorCommandOpts } from '@/types';
 import { buildCommand } from '@/utils/BuildCommand';
+import { useVehicleLogs, useVehicleStatus } from '@/hooks';
 
 const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
   const {

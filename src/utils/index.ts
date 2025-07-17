@@ -206,5 +206,5 @@ function uint8ArrayToHex(array: Uint8Array): string {
     .map((byte) => byte.toString(16).padStart(2, '0').toUpperCase())
     .join(' ');
 }
-
+export * from './BuildCommand';
 export { concatUint8Arrays, uint8ArrayToHex, parseReceivedData, formatTimestamp, u8ArrayToBool };
