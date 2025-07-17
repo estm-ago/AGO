@@ -1,6 +1,6 @@
+import type { LogEntry } from '@/types';
+import { formatTimestamp } from '@/utils';
 import { useState, useCallback } from 'react';
-import { type LogEntry } from '../types/vehicle';
-import { formatTimestamp } from '../utils/vehicle';
 
 export function useVehicleLogs() {
   const [logs, setLogs] = useState<LogEntry[]>([]);

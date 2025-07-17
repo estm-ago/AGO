@@ -1,6 +1,6 @@
+import { CmdB0, CmdB1, type DataStatistics, type ReceivedData } from '@/types';
+import { formatTimestamp } from '@/utils';
 import { useState, useCallback } from 'react';
-import { type DataStatistics, type ReceivedData, CMD_B1_LEFT_SPEED, CMD_B1_RIGHT_SPEED, CMD_B1_LEFT_DUTY, CMD_B1_RIGHT_DUTY, CMD_B0_DATA } from '../types/vehicle';
-import { formatTimestamp } from '../utils/vehicle';
 
 // 初始統計數據
 const initialStatistics: DataStatistics = {
@@ -8,7 +8,7 @@ const initialStatistics: DataStatistics = {
   successCount: 0,
   errorCount: 0,
   successRate: 0,
-  
+
   leftSpeed: {
     current: 0,
     average: 0,
@@ -16,7 +16,7 @@ const initialStatistics: DataStatistics = {
     max: 0,
     samples: 0,
   },
-  
+
   rightSpeed: {
     current: 0,
     average: 0,
@@ -24,7 +24,7 @@ const initialStatistics: DataStatistics = {
     max: 0,
     samples: 0,
   },
-  
+
   leftDuty: {
     current: 0,
     average: 0,
@@ -32,7 +32,7 @@ const initialStatistics: DataStatistics = {
     max: 0,
     samples: 0,
   },
-  
+
   rightDuty: {
     current: 0,
     average: 0,
@@ -40,19 +40,22 @@ const initialStatistics: DataStatistics = {
     max: 0,
     samples: 0,
   },
-  
+
   lastUpdated: formatTimestamp(),
 };
 
 // 更新單個數據類型的統計
 function updateStatisticField(
-  current: DataStatistics[keyof Omit<DataStatistics, 'totalReceived' | 'successCount' | 'errorCount' | 'successRate' | 'lastUpdated'>], 
-  newValue: number
+  current: DataStatistics[keyof Omit<
+    DataStatistics,
+    'totalReceived' | 'successCount' | 'errorCount' | 'successRate' | 'lastUpdated'
+  >],
+  newValue: number,
 ) {
   const samples = current.samples + 1;
   const total = current.average * current.samples + newValue;
   const average = total / samples;
-  
+
   return {
     current: newValue,
     average: parseFloat(average.toFixed(2)),
@@ -66,43 +69,44 @@ export function useDataStatistics() {
   const [statistics, setStatistics] = useState<DataStatistics>(initialStatistics);
 
   const updateStatistics = useCallback((data: ReceivedData) => {
-    setStatistics(prev => {
+    setStatistics((prev) => {
       const newStats = { ...prev };
-      
+
       // 更新總計數器
       newStats.totalReceived += 1;
-      
+
       if (data.isError) {
         newStats.errorCount += 1;
       } else {
         newStats.successCount += 1;
-        
+
         // 只處理成功的數據回傳
-        if (data.cmd0 === CMD_B0_DATA && typeof data.parsedValue === 'number') {
+        if (data.cmd0 === CmdB0.DataControl && typeof data.parsedValue === 'number') {
           switch (data.cmd1) {
-            case CMD_B1_LEFT_SPEED:
+            case CmdB1.LeftSpeed:
               newStats.leftSpeed = updateStatisticField(newStats.leftSpeed, data.parsedValue);
               break;
-            case CMD_B1_RIGHT_SPEED:
+            case CmdB1.RightSpeed:
               newStats.rightSpeed = updateStatisticField(newStats.rightSpeed, data.parsedValue);
               break;
-            case CMD_B1_LEFT_DUTY:
+            case CmdB1.LeftDuty:
               newStats.leftDuty = updateStatisticField(newStats.leftDuty, data.parsedValue);
               break;
-            case CMD_B1_RIGHT_DUTY:
+            case CmdB1.RightDuty:
               newStats.rightDuty = updateStatisticField(newStats.rightDuty, data.parsedValue);
               break;
           }
         }
       }
-      
+
       // 更新成功率
-      newStats.successRate = newStats.totalReceived > 0 
-        ? parseFloat(((newStats.successCount / newStats.totalReceived) * 100).toFixed(1))
-        : 0;
-      
+      newStats.successRate =
+        newStats.totalReceived > 0
+          ? parseFloat(((newStats.successCount / newStats.totalReceived) * 100).toFixed(1))
+          : 0;
+
       newStats.lastUpdated = formatTimestamp();
-      
+
       return newStats;
     });
   }, []);
@@ -113,13 +117,13 @@ export function useDataStatistics() {
 
   const getOverallPerformance = useCallback(() => {
     const { leftSpeed, rightSpeed, leftDuty, rightDuty } = statistics;
-    
+
     // 計算整體效能指標
     const avgSpeed = (leftSpeed.average + rightSpeed.average) / 2;
     const avgDuty = (leftDuty.average + rightDuty.average) / 2;
     const speedBalance = Math.abs(leftSpeed.average - rightSpeed.average);
     const dutyBalance = Math.abs(leftDuty.average - rightDuty.average);
-    
+
     return {
       averageSpeed: parseFloat(avgSpeed.toFixed(2)),
       averageDuty: parseFloat(avgDuty.toFixed(2)),
@@ -135,4 +139,4 @@ export function useDataStatistics() {
     resetStatistics,
     getOverallPerformance,
   };
-} 
+}

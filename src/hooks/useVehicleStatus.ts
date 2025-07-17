@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { ReadyState } from 'react-use-websocket';
-import { type ConnectionStatus } from '../types/vehicle';
 import { Wifi, WifiOff } from 'lucide-react';
+import type { ConnectionStatus } from '@/types';
 
 export function useVehicleStatus() {
   const [speed, setSpeed] = useState(40);
