@@ -48,9 +48,9 @@ function buildRobotCommand(opts: BuildRobotCommandArgs): Uint8Array {
   dv.setUint8(1, b1);
   dv.setUint8(2, b2);
   if (b2 === ArmCmdB2.Set && value !== undefined) {
-    if (value < 0 || value > 100) {
-      throw new RangeError('Value must be between 0 and 100');
-    }
+    // if (value < 0 || value > 100) {
+    //   throw new RangeError('Value must be between 0 and 100');
+    // }
     dv.setUint8(3, value);
   }
   return new Uint8Array(buf);

@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Car, Database, Wifi } from 'lucide-react';
+import { Car, Database, Wifi, Bot } from 'lucide-react';
 import { ReadyState } from 'react-use-websocket';
 
 interface NavbarProps {
@@ -65,7 +65,7 @@ export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState }) =
                 variant={location.pathname === '/robotic' ? 'default' : 'outline'}
                 className='flex items-center gap-2'
               >
-                <Database className='w-4 h-4' />
+                <Bot className='w-4 h-4' />
                 機器手臂控制
                 {getConnectionBadge(dataReadyState)}
               </Button>
