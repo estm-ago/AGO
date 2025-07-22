@@ -21,19 +21,19 @@ const Robotic: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) =>
   // const [armStatus, setArmStatus] = useState('待機');
 
   const JOINTS = [
-    { key: 'bottom', label: '底座（馬達）', range: [-180, 180], initial: 0, cmd: ArmCmdB1.Buttom },
-    { key: 'shoulder', label: '肩膀', range: [-90, 90], initial: 45, cmd: ArmCmdB1.Shoulder },
+    { key: 'bottom', label: '底座（馬達）', range: [0, 100], initial: 0, cmd: ArmCmdB1.Buttom },
+    { key: 'shoulder', label: '肩膀', range: [0, 100], initial: 45, cmd: ArmCmdB1.Shoulder },
     {
       key: 'elbowBottom',
       label: '肘部下方',
-      range: [0, 180],
+      range: [0, 100],
       initial: 90,
       cmd: ArmCmdB1.Elbow_Btm,
     },
-    { key: 'elbowTop', label: '肘部上方', range: [0, 180], initial: 90, cmd: ArmCmdB1.Elbow_Top },
-    { key: 'wrist', label: '手腕', range: [-90, 90], initial: 0, cmd: ArmCmdB1.Wrist },
-    { key: 'finger', label: '夾爪', range: [0, 100], initial: 50, cmd: ArmCmdB1.Finger },
-    { key: 'arm', label: '手臂', range: [0, 180], initial: 0, cmd: ArmCmdB1.Arm },
+    { key: 'elbowTop', label: '肘部上方', range: [0, 100], initial: 90, cmd: ArmCmdB1.Elbow_Top },
+    { key: 'wrist', label: '手腕', range: [0, 100], initial: 0, cmd: ArmCmdB1.Wrist },
+    { key: 'finger', label: '夾爪', range: [0, 50], initial: 50, cmd: ArmCmdB1.Finger },
+    { key: 'arm', label: '手臂', range: [0, 100], initial: 0, cmd: ArmCmdB1.Arm },
   ];
   type JointKey = (typeof JOINTS)[number]['key'];
   type JointState = Record<JointKey, number>;
@@ -105,7 +105,10 @@ const Robotic: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) =>
       b2: ArmCmdB2.Set,
       value: val,
     });
-    sendMessage(command);
+    // sendMessage(command);
+    setTimeout(() => {
+      sendMessage(command);
+    }, 500);
   };
   useEffect(() => {
     if (!lastMessage) return;

@@ -7,9 +7,10 @@ import { ReadyState } from 'react-use-websocket';
 interface NavbarProps {
   controlReadyState?: ReadyState;
   dataReadyState?: ReadyState;
+  robotReadyState?: ReadyState;
 }
 
-export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState }) => {
+export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState, robotReadyState }) => {
   const location = useLocation();
 
   const getConnectionBadge = (readyState?: ReadyState) => {
@@ -67,7 +68,7 @@ export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState }) =
               >
                 <Bot className='w-4 h-4' />
                 機器手臂控制
-                {getConnectionBadge(dataReadyState)}
+                {getConnectionBadge(robotReadyState)}
               </Button>
             </Link>
           </div>

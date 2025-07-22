@@ -1,4 +1,4 @@
-import { useEffect, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 import { ReadyState } from 'react-use-websocket';
 import { VehicleHeader } from './VehicleHeader';
@@ -22,6 +22,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
   } = useVehicleStatus();
 
   const { logs, addLog, clearLogs } = useVehicleLogs();
+  const [trackMode, setTrackMode] = useState<'manual' | 'auto'>('auto');
 
   useEffect(() => {
     if (!lastMessage) return;
@@ -209,15 +210,17 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
           onRightSpinForward={handleRightSpinForward}
           onLeftSpinBack={handleLeftSpinBack}
           onRightSpinBack={handleRightSpinBack}
-          disabled={isDisabled}
+          disabled={isDisabled || trackMode !== 'manual'}
         />
 
         <div className='space-y-6'>
-          <SpeedControl speed={speed} onSpeedChange={updateSpeed} />
+          <SpeedControl speed={speed} onSpeedChange={updateSpeed} trackMode={trackMode} />
           <VehicleStatusPanel
             isMoving={isMoving}
             currentDirection={currentDirection}
             speed={speed}
+            trackMode={trackMode}
+            setTrackMode={setTrackMode}
           />
         </div>
       </div>

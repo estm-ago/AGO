@@ -5,9 +5,10 @@ import { Gauge } from 'lucide-react';
 interface SpeedControlProps {
   speed: number;
   onSpeedChange: (speed: number) => void;
+  trackMode: 'manual' | 'auto';
 }
 
-export const SpeedControl: FC<SpeedControlProps> = ({ speed, onSpeedChange }) => {
+export const SpeedControl: FC<SpeedControlProps> = ({ speed, onSpeedChange, trackMode }) => {
   const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
     onSpeedChange(value);
@@ -39,6 +40,7 @@ export const SpeedControl: FC<SpeedControlProps> = ({ speed, onSpeedChange }) =>
             max='100'
             step='5'
             value={speed}
+            disabled={trackMode !== 'manual'}
             onChange={handleRangeChange}
             className='w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600'
           />
@@ -60,6 +62,7 @@ export const SpeedControl: FC<SpeedControlProps> = ({ speed, onSpeedChange }) =>
             min={0}
             max={100}
             step={1}
+            disabled={trackMode !== 'manual'}
             className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
           />
         </div>

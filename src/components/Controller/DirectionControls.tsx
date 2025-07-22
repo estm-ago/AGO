@@ -44,7 +44,7 @@ export const DirectionControls: FC<DirectionControlsProps> = ({
           方向控制
         </CardTitle>
       </CardHeader>
-      <CardContent className='space-y-6'>
+      <CardContent className='space-y-6 my-auto'>
         {/* 方向按鈕網格 */}
         <div className='grid grid-cols-3 gap-4 max-w-md mx-auto'>
           {/* 第一行 */}

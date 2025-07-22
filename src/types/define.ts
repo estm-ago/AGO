@@ -3,6 +3,7 @@ const CmdB0 = {
   WheelControl: 0x20,
   DataControl: 0x10,
   ArmControl: 0x31,
+  MapControl: 0x30,
   Error: 0xff,
 } as const;
 
@@ -48,6 +49,16 @@ const ArmCmdB2 = {
   Set: 0x01,
 } as const;
 
+const MapCmdB1 = {
+  Set: 0x01,
+} as const;
+
+const MapCmdB2 = {
+  FORWARD: 0x00,
+  BACKWARD: 0x01,
+  LEFT: 0x02,
+  RIGHT: 0x03,
+};
 // 錯誤類型定義
 // const ERROR_CODES = {
 //   SENSOR_FAILURE: 0x01,
@@ -58,4 +69,4 @@ const ArmCmdB2 = {
 //   UNKNOWN_COMMAND: 0x06,
 // } as const;
 
-export { CmdB0, CmdB1, CmdB2, ArmCmdB1, ArmCmdB2 };
+export { CmdB0, CmdB1, CmdB2, ArmCmdB1, ArmCmdB2, MapCmdB1, MapCmdB2 };

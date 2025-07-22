@@ -1,10 +1,8 @@
 import Robotic from '@/components/Robotic';
-import { WEBSOCKET_CONFIG } from '@/config/websocket';
-import useWebSocket from 'react-use-websocket';
+import type { FC } from 'react';
+import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 
-const RoboticPage = () => {
-  const webSocketHook = useWebSocket(WEBSOCKET_CONFIG.url, WEBSOCKET_CONFIG.options);
-
+const RoboticPage: FC<WebSocketHook> = (robot_ws) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='container mx-auto py-8'>
@@ -13,7 +11,7 @@ const RoboticPage = () => {
           <p className='text-gray-600'>使用下方控制面板來操控機器手臂的方向和速度</p>
         </div>
 
-        <Robotic {...webSocketHook} />
+        <Robotic {...robot_ws} />
       </div>
     </div>
   );

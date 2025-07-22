@@ -2,17 +2,22 @@ import { type FC } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Activity } from 'lucide-react';
+import Track from './Track';
 
 interface VehicleStatusPanelProps {
   isMoving: boolean;
   currentDirection: string;
   speed: number;
+  trackMode: 'manual' | 'auto';
+  setTrackMode: React.Dispatch<React.SetStateAction<'manual' | 'auto'>>;
 }
 
 export const VehicleStatusPanel: FC<VehicleStatusPanelProps> = ({
   isMoving,
   currentDirection,
   speed,
+  trackMode,
+  setTrackMode,
 }) => {
   return (
     <Card>
@@ -37,6 +42,7 @@ export const VehicleStatusPanel: FC<VehicleStatusPanelProps> = ({
           <span className='text-sm font-medium'>目標速度:</span>
           <Badge variant='outline'>{speed}%</Badge>
         </div>
+        <Track trackMode={trackMode} setTrackMode={setTrackMode} />
       </CardContent>
     </Card>
   );
