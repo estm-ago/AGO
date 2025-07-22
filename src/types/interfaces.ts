@@ -1,4 +1,4 @@
-import type { ArmCmdB1Type, ArmCmdB2Type, CmdB1, CmdB2, CmdB2Type } from '.';
+import type { ArmCmdB1Type, ArmCmdB2Type, CmdB1, CmdB2, CmdB2Type, MapCmdB2Type } from '.';
 
 // 接收數據結構
 interface ReceivedData {
@@ -92,6 +92,9 @@ interface BuildRobotCommandArgs {
   b2: ArmCmdB2Type;
   value?: number;
 }
+interface BuildTrackCommandArgs {
+  b2: MapCmdB2Type;
+}
 
 export type {
   ReceivedData,
@@ -102,4 +105,5 @@ export type {
   CarCommandOpts,
   MotorCommandOpts,
   BuildRobotCommandArgs,
+  BuildTrackCommandArgs,
 };

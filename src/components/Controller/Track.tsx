@@ -3,8 +3,18 @@ import { type FC } from 'react';
 interface TrackProps {
   trackMode: 'manual' | 'auto';
   setTrackMode: React.Dispatch<React.SetStateAction<'manual' | 'auto'>>;
+  sendAutoControl: () => void;
 }
-const Track: FC<TrackProps> = ({ trackMode, setTrackMode }) => {
+
+const Track: FC<TrackProps> = ({ trackMode, setTrackMode, sendAutoControl }) => {
+  const Manual_Control = () => {
+    setTrackMode('manual');
+  };
+  const Auto_Control = () => {
+    sendAutoControl();
+    setTrackMode('auto');
+  };
+
   return (
     <div className='bg-white/10 backdrop-blur-md rounded-2xl p-6'>
       {/* 模式切換器 */}
@@ -17,7 +27,7 @@ const Track: FC<TrackProps> = ({ trackMode, setTrackMode }) => {
           />
           <div className='relative flex'>
             <button
-              onClick={() => setTrackMode('manual')}
+              onClick={Manual_Control}
               className={`px-6 py-2 rounded-full font-medium transition-all duration-300 z-10 ${
                 trackMode === 'manual'
                   ? 'text-white shadow-sm'
@@ -27,7 +37,7 @@ const Track: FC<TrackProps> = ({ trackMode, setTrackMode }) => {
               手動模式
             </button>
             <button
-              onClick={() => setTrackMode('auto')}
+              onClick={Auto_Control}
               className={`px-6 py-2 rounded-full font-medium transition-all duration-300 z-10 ${
                 trackMode === 'auto' ? 'text-white shadow-sm' : 'text-white/70 hover:text-white/90'
               }`}

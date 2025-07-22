@@ -3,7 +3,9 @@ import {
   CmdB0,
   CmdB1,
   CmdB2,
+  MapCmdB1,
   type BuildRobotCommandArgs,
+  type BuildTrackCommandArgs,
   type CmdB2Type,
   type ControllerType,
   type DataRequestType,
@@ -55,6 +57,15 @@ function buildRobotCommand(opts: BuildRobotCommandArgs): Uint8Array {
   }
   return new Uint8Array(buf);
 }
+function buildMapCommand(opts: BuildTrackCommandArgs): Uint8Array {
+  const { b2 } = opts;
+  const buf = new ArrayBuffer(8);
+  const dv = new DataView(buf);
+  dv.setUint8(0, CmdB0.MapControl);
+  dv.setUint8(1, MapCmdB1.Set);
+  dv.setUint8(2, b2);
+  return new Uint8Array(buf);
+}
 
 // 構建數據請求命令
 function buildDataRequestCommand(dataType: DataRequestType): Uint8Array {
@@ -78,4 +89,10 @@ const DATA_REQUEST_COMMANDS = {
   ],
 };
 
-export { buildCommand, buildDataRequestCommand, DATA_REQUEST_COMMANDS, buildRobotCommand };
+export {
+  buildCommand,
+  buildDataRequestCommand,
+  DATA_REQUEST_COMMANDS,
+  buildRobotCommand,
+  buildMapCommand,
+};

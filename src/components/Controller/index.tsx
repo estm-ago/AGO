@@ -7,8 +7,13 @@ import { SpeedControl } from './SpeedControl';
 import { VehicleStatusPanel } from './VehicleStatusPanel';
 import { SystemLogs } from './SystemLogs';
 import { concatUint8Arrays, u8ArrayToBool } from '@/utils';
-import { type CarCommandOpts, type ControllerType, type MotorCommandOpts } from '@/types';
-import { buildCommand } from '@/utils/BuildCommand';
+import {
+  type CarCommandOpts,
+  type ControllerType,
+  type MapCmdB2Type,
+  type MotorCommandOpts,
+} from '@/types';
+import { buildCommand, buildMapCommand } from '@/utils/BuildCommand';
 import { useVehicleLogs, useVehicleStatus } from '@/hooks';
 
 const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
@@ -35,6 +40,35 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
       });
     }
   }, [lastMessage, addLog]);
+
+  const sendAutoControl = () => {
+    if (readyState !== ReadyState.OPEN) return;
+    let CarController = 'VehicleControl' as ControllerType;
+    const buffers: Uint8Array[] = [];
+    buffers.push(
+      buildCommand({
+        control: CarController,
+        b1: 'Motion',
+        arg: 'Forward',
+      }),
+    );
+    buffers.push(
+      buildCommand({
+        control: CarController,
+        b1: 'Speed',
+        arg: 0x14,
+      }),
+    );
+    buffers.push(
+      buildCommand({
+        control: CarController,
+        b1: 'Mode',
+        arg: 'Track',
+      }),
+    );
+    const all = concatUint8Arrays(...buffers);
+    sendMessage(all.buffer);
+  };
 
   const sendCarCommand = (opts: CarCommandOpts) => {
     if (readyState !== ReadyState.OPEN) return;
@@ -72,6 +106,11 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     sendMessage(all.buffer);
     const moving = opts.motion !== undefined && opts.motion !== 'Stop';
     updateMovementStatus(moving, opts.direction);
+  };
+
+  const sendMapCommand = (b2: MapCmdB2Type) => {
+    let array = buildMapCommand({ b2 });
+    sendMessage(array.buffer);
   };
 
   const sendMotorCommand = (opts: MotorCommandOpts) => {
@@ -221,6 +260,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
             speed={speed}
             trackMode={trackMode}
             setTrackMode={setTrackMode}
+            sendAutoControl={sendAutoControl}
           />
         </div>
       </div>
