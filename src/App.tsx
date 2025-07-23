@@ -16,8 +16,8 @@ function App() {
           path='/'
           element={
             <Layout
-              dataReadyState={data_webSocketHook.readyState}
               controlReadyState={control_webSocketHook.readyState}
+              dataReadyState={data_webSocketHook.readyState}
               robotReadyState={robot_webSocketHook.readyState}
             />
           }
