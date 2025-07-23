@@ -10,6 +10,7 @@ interface VehicleStatusPanelProps {
   speed: number;
   trackMode: 'manual' | 'auto';
   setTrackMode: React.Dispatch<React.SetStateAction<'manual' | 'auto'>>;
+  disabled: boolean;
   sendAutoControl: () => void;
 }
 
@@ -20,6 +21,7 @@ export const VehicleStatusPanel: FC<VehicleStatusPanelProps> = ({
   trackMode,
   setTrackMode,
   sendAutoControl,
+  disabled,
 }) => {
   return (
     <Card>
@@ -44,7 +46,12 @@ export const VehicleStatusPanel: FC<VehicleStatusPanelProps> = ({
           <span className='text-sm font-medium'>目標速度:</span>
           <Badge variant='outline'>{speed}%</Badge>
         </div>
-        <Track trackMode={trackMode} setTrackMode={setTrackMode} sendAutoControl={sendAutoControl} />
+        <Track
+          trackMode={trackMode}
+          setTrackMode={setTrackMode}
+          sendAutoControl={sendAutoControl}
+          disabled={disabled}
+        />
       </CardContent>
     </Card>
   );

@@ -261,6 +261,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
             trackMode={trackMode}
             setTrackMode={setTrackMode}
             sendAutoControl={sendAutoControl}
+            disabled={isDisabled || trackMode !== 'manual'}
           />
         </div>
       </div>
