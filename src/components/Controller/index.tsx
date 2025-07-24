@@ -27,7 +27,11 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
   } = useVehicleStatus();
 
   const { logs, addLog, clearLogs } = useVehicleLogs();
-  const [trackMode, setTrackMode] = useState<'manual' | 'auto'>('auto');
+  const [trackMode, setTrackMode] = useState<'manual' | 'auto'>('manual');
+  const [disabled, setDisabled] = useState(false);
+  useEffect(() => {
+    setDisabled(trackMode !== 'manual');
+  }, [trackMode]);
 
   useEffect(() => {
     if (!lastMessage) return;
@@ -249,7 +253,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
           onRightSpinForward={handleRightSpinForward}
           onLeftSpinBack={handleLeftSpinBack}
           onRightSpinBack={handleRightSpinBack}
-          disabled={isDisabled || trackMode !== 'manual'}
+          disabled={isDisabled || disabled}
         />
 
         <div className='space-y-6'>
@@ -261,7 +265,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
             trackMode={trackMode}
             setTrackMode={setTrackMode}
             sendAutoControl={sendAutoControl}
-            disabled={isDisabled || trackMode !== 'manual'}
+            disabled={isDisabled || disabled}
           />
         </div>
       </div>

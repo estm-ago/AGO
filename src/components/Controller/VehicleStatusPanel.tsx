@@ -21,7 +21,6 @@ export const VehicleStatusPanel: FC<VehicleStatusPanelProps> = ({
   trackMode,
   setTrackMode,
   sendAutoControl,
-  disabled,
 }) => {
   return (
     <Card>
@@ -50,7 +49,6 @@ export const VehicleStatusPanel: FC<VehicleStatusPanelProps> = ({
           trackMode={trackMode}
           setTrackMode={setTrackMode}
           sendAutoControl={sendAutoControl}
-          disabled={disabled}
         />
       </CardContent>
     </Card>
