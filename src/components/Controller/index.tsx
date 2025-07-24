@@ -15,6 +15,7 @@ import {
 } from '@/types';
 import { buildCommand, buildMapCommand } from '@/utils/BuildCommand';
 import { useVehicleLogs, useVehicleStatus } from '@/hooks';
+import Rfid from './Rfid';
 
 const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
   const {
@@ -29,6 +30,8 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
   const { logs, addLog, clearLogs } = useVehicleLogs();
   const [trackMode, setTrackMode] = useState<'manual' | 'auto'>('manual');
   const [disabled, setDisabled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [uid, setUid] = useState<number>(0);
   useEffect(() => {
     setDisabled(trackMode !== 'manual');
   }, [trackMode]);
@@ -39,6 +42,19 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     if (data instanceof Blob) {
       data.arrayBuffer().then((buf) => {
         const u8 = new Uint8Array(buf);
+        if (u8.length === 6) {
+          console.log('收到 RFID：', u8);
+          const last4 = u8.subarray(u8.length - 4);
+          const num = new DataView(last4.buffer, last4.byteOffset, last4.byteLength).getUint32(
+            0,
+            false,
+          );
+
+          console.log('解析後的 RFID 值: ', num);
+          setUid(num);
+          setOpen(true);
+          return;
+        }
         const flag = u8ArrayToBool(u8);
         addLog(flag ? '指令執行成功' : '指令執行失敗', flag);
       });
@@ -240,6 +256,9 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
 
   return (
     <div className='max-w-4xl mx-auto p-6 space-y-6'>
+      {(trackMode === 'auto' || open) && (
+        <Rfid uid={uid} open={open} setOpen={setOpen} sendMapCommand={sendMapCommand} />
+      )}
       <VehicleHeader connectionStatus={connectionStatus} />
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>

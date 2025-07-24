@@ -50,7 +50,7 @@ const ArmCmdB2 = {
 } as const;
 
 const MapCmdB1 = {
-  Set: 0x01,
+  Set: 0x10,
 } as const;
 
 const MapCmdB2 = {
