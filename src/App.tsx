@@ -40,7 +40,16 @@ function App() {
           }
         >
           <Route index element={<HomePage />} />
-          <Route path='control' element={<ControlPage {...control_webSocketHook} />} />
+          <Route
+            path='control'
+            element={
+              <ControlPage
+                {...control_webSocketHook}
+                CANPortConfig={CANPortConfig}
+                setCANPortConfig={setCANPortConfig}
+              />
+            }
+          />
           <Route
             path='data'
             element={<DataPage

@@ -14,10 +14,17 @@ import {
   type MotorCommandOpts,
 } from '@/types';
 import { buildVehicleCommand, buildMapCommand } from '@/utils/BuildCommand';
-import { useVehicleLogs, useVehicleStatus } from '@/hooks';
+import { useVehicleLogs, useVehicleStatus, type WSCanFrame } from '@/hooks';
 import Rfid from './Rfid';
+import type { CANPortConfig, SetCANPortConfig } from '../SerialConsole/serialPortHelpers';
+import { sendWSCanFrame } from '../SerialConsole/WSCanSendReceive';
 
-const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
+export interface ControllerProps extends WebSocketHook {
+  CANPortConfig: CANPortConfig;
+  setCANPortConfig: SetCANPortConfig;
+}
+
+const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CANPortConfig, setCANPortConfig }) => {
   const {
     speed,
     isMoving,
@@ -90,8 +97,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     sendMessage(all.buffer);
   };
 
-  const sendCarCommand = (opts: CarCommandOpts) => {
-    if (readyState !== ReadyState.OPEN) return;
+  const sendCarCommand = async (opts: CarCommandOpts) => {
     let CarController = 'VehicleControl' as ControllerType;
     const buffers: Uint8Array[] = [];
 
@@ -122,8 +128,25 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
         }),
       );
     }
-    const all = concatUint8Arrays(...buffers);
-    sendMessage(all.buffer);
+    if (readyState == ReadyState.OPEN)
+    {
+      const all = concatUint8Arrays(...buffers);
+      sendMessage(all.buffer);
+    }
+    if (CANPortConfig.readyState == ReadyState.OPEN) 
+    {
+      for (const buf of buffers)
+      {
+        const frame: WSCanFrame = {
+          id: 0x123,
+          extended: false,
+          rtr: false,
+          dlc: buf.length,
+          data: buf,
+        };
+        await sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
+      }
+    }
     const moving = opts.motion !== undefined && opts.motion !== 'Stop';
     updateMovementStatus(moving, opts.direction);
   };
@@ -133,9 +156,8 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     sendMessage(array.buffer);
   };
 
-  const sendMotorCommand = (opts: MotorCommandOpts) => {
+  const sendMotorCommand = async (opts: MotorCommandOpts) => {
     let CarController = 'WheelControl' as ControllerType;
-    if (readyState !== ReadyState.OPEN) return;
     const buffers: Uint8Array[] = [];
     if (opts.motion !== undefined) {
       buffers.push(
@@ -165,8 +187,26 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
         arg: 'Free',
       }),
     );
-    const all = concatUint8Arrays(...buffers);
-    sendMessage(all.buffer);
+    if (readyState == ReadyState.OPEN)
+    {
+      const all = concatUint8Arrays(...buffers);
+      sendMessage(all.buffer);
+    }
+    if (CANPortConfig.readyState == ReadyState.OPEN) 
+    {
+      for (const buf of buffers)
+      {
+        console.log(`${buf}`);
+        const frame: WSCanFrame = {
+          id: 0x123,
+          extended: false,
+          rtr: false,
+          dlc: buf.length,
+          data: buf,
+        };
+        await sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
+      }
+    }
     const moving = opts.motion !== undefined && opts.motion !== 'Stop';
     updateMovementStatus(moving, opts.direction);
   };
@@ -252,7 +292,8 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
   };
 
   const connectionStatus = getConnectionStatus(readyState);
-  const isDisabled = readyState !== ReadyState.OPEN;
+  const webSktIsDisabled = readyState !== ReadyState.OPEN;
+  const canIsDisabled = CANPortConfig.readyState !== ReadyState.OPEN;
 
   return (
     <div className='max-w-4xl mx-auto p-6 space-y-6'>
@@ -272,7 +313,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
           onRightSpinForward={handleRightSpinForward}
           onLeftSpinBack={handleLeftSpinBack}
           onRightSpinBack={handleRightSpinBack}
-          disabled={isDisabled || disabled}
+          disabled={(webSktIsDisabled && canIsDisabled) || disabled}
         />
 
         <div className='space-y-6'>
@@ -284,7 +325,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
             trackMode={trackMode}
             setTrackMode={setTrackMode}
             sendAutoControl={sendAutoControl}
-            disabled={isDisabled || disabled}
+            disabled={(webSktIsDisabled && canIsDisabled) || disabled}
           />
         </div>
       </div>

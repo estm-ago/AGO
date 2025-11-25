@@ -1,8 +1,7 @@
 import { type FC } from 'react';
-import Controller from '../components/Controller';
-import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
+import Controller, { type ControllerProps } from '../components/Controller';
 
-const ControlPage: FC<WebSocketHook> = (controller_ws) => {
+const ControlPage: FC<ControllerProps> = (controller_ws) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='container mx-auto py-8'>

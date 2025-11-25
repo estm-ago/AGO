@@ -1,4 +1,5 @@
 import { WSCan, type WSCanFrame } from '@/hooks'
+import type { CANPortConfig, SetCANPortConfig } from './serialPortHelpers';
 
 export interface ReadLoopOptions {
   frameSize: number; // 像你現在的 FRAME_SIZE = 20
@@ -7,7 +8,7 @@ export interface ReadLoopOptions {
   onDone?: () => void;                         // reader 結束
 }
 
-export async function startReadLoop(
+export async function startReadLoop (
   port: SerialPort,
   options: ReadLoopOptions,
 ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
@@ -51,4 +52,21 @@ export async function startReadLoop(
   })();
 
   return reader;
+}
+
+export async function sendWSCanFrame (
+  frame: WSCanFrame,
+  options: CANPortConfig,
+  setCANPortConfig: SetCANPortConfig,
+) {
+  const serialPort = options.port;
+  if (!serialPort || !serialPort.writable) return;
+  const data = WSCan.dataEncode(frame);
+  const writer = serialPort.writable.getWriter();
+  await writer.write(data);
+  writer.releaseLock();
+  setCANPortConfig(prev => ({
+    ...prev,
+    log: prev.log + `TX: ${JSON.stringify(frame)}\n`,
+  }));
 }

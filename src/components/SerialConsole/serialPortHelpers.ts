@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { startReadLoop, type ReadLoopOptions } from "./Loop";
+import { startReadLoop, type ReadLoopOptions } from "./WSCanSendReceive";
 import { ReadyState } from 'react-use-websocket';
 
 export interface CANPortConfig {

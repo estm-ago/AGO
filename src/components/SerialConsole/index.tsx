@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type FC } from "react";
 import { type CANPortConfig, type SetCANPortConfig, openSerialPort, closeSerialPort } from "./serialPortHelpers";
-import { buildCanCommand } from '@/utils/BuildCommand';
-import { WSCan, type WSCanFrame } from '@/hooks'
+import { type WSCanFrame } from '@/hooks'
 import { CmdB0, CmdB1, type ReceivedData } from "@/types";
 import type { DataReceiveStore, DataStatisticsStore } from '@/types/DataStatsStore';
+import { sendWSCanFrame } from "./WSCanSendReceive";
 
 interface SerialConsoleProps {
   CANPortConfig: CANPortConfig;
@@ -119,10 +119,6 @@ const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig
   };
 
   const handleSend = async () => {
-    if (!serialPort || !serialPort.writable) {
-      setStatus("尚未連線串口");
-      return;
-    }
     try {
       const datas = hexStringToBytes(input);
       const frame: WSCanFrame = {
@@ -132,15 +128,8 @@ const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig
         dlc: datas.length,
         data: datas,
       };
-      const data = WSCan.dataEncode(frame);
-      const writer = serialPort.writable.getWriter();
-      await writer.write(data);
-      writer.releaseLock();
-      setCANPortConfig(prev => ({
-        ...prev,
-        log: prev.log + `TX: ${JSON.stringify(frame)}\n`,
-      }));
-    } catch (err: any) {
+      await sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
+    } catch(err: any) {
       setStatus(`送出失敗: ${err?.message ?? String(err)}`);
     }
   };
