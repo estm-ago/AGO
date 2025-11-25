@@ -24,6 +24,35 @@ export interface ControllerProps extends WebSocketHook {
   setCANPortConfig: SetCANPortConfig;
 }
 
+async function sendCMD(
+  webSktState: ReadyState,
+  sendMessage: (data: ArrayBufferLike | string) => void,
+  CANPortConfig: CANPortConfig,
+  setCANPortConfig: SetCANPortConfig,
+  buffers: Uint8Array[]
+): Promise<void> {
+  if (buffers.length === 0) return;
+  if (webSktState == ReadyState.OPEN)
+  {
+    const all = concatUint8Arrays(...buffers);
+    sendMessage(all.buffer);
+  }
+  if (CANPortConfig.readyState == ReadyState.OPEN) 
+  {
+    for (const buf of buffers)
+    {
+      const frame: WSCanFrame = {
+        id: 0x123,
+        extended: false,
+        rtr: false,
+        dlc: buf.length,
+        data: buf,
+      };
+      await sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
+    }
+  }
+}
+
 const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CANPortConfig, setCANPortConfig }) => {
   const {
     speed,
@@ -68,8 +97,7 @@ const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState,
     }
   }, [lastMessage, addLog]);
 
-  const sendAutoControl = () => {
-    if (readyState !== ReadyState.OPEN) return;
+  const sendAutoControl = async () => {
     let CarController = 'VehicleControl' as ControllerType;
     const buffers: Uint8Array[] = [];
     buffers.push(
@@ -83,7 +111,7 @@ const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState,
       buildVehicleCommand({
         control: CarController,
         b1: 'Speed',
-        arg: 0x14,
+        arg: speed,
       }),
     );
     buffers.push(
@@ -93,8 +121,7 @@ const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState,
         arg: 'Track',
       }),
     );
-    const all = concatUint8Arrays(...buffers);
-    sendMessage(all.buffer);
+    await sendCMD(readyState, sendMessage, CANPortConfig, setCANPortConfig, buffers);
   };
 
   const sendCarCommand = async (opts: CarCommandOpts) => {
@@ -128,25 +155,7 @@ const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState,
         }),
       );
     }
-    if (readyState == ReadyState.OPEN)
-    {
-      const all = concatUint8Arrays(...buffers);
-      sendMessage(all.buffer);
-    }
-    if (CANPortConfig.readyState == ReadyState.OPEN) 
-    {
-      for (const buf of buffers)
-      {
-        const frame: WSCanFrame = {
-          id: 0x123,
-          extended: false,
-          rtr: false,
-          dlc: buf.length,
-          data: buf,
-        };
-        await sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
-      }
-    }
+    await sendCMD(readyState, sendMessage, CANPortConfig, setCANPortConfig, buffers);
     const moving = opts.motion !== undefined && opts.motion !== 'Stop';
     updateMovementStatus(moving, opts.direction);
   };
@@ -187,26 +196,7 @@ const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState,
         arg: 'Free',
       }),
     );
-    if (readyState == ReadyState.OPEN)
-    {
-      const all = concatUint8Arrays(...buffers);
-      sendMessage(all.buffer);
-    }
-    if (CANPortConfig.readyState == ReadyState.OPEN) 
-    {
-      for (const buf of buffers)
-      {
-        console.log(`${buf}`);
-        const frame: WSCanFrame = {
-          id: 0x123,
-          extended: false,
-          rtr: false,
-          dlc: buf.length,
-          data: buf,
-        };
-        await sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
-      }
-    }
+    await sendCMD(readyState, sendMessage, CANPortConfig, setCANPortConfig, buffers);
     const moving = opts.motion !== undefined && opts.motion !== 'Stop';
     updateMovementStatus(moving, opts.direction);
   };
