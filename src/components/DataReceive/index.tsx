@@ -4,9 +4,15 @@ import { ReadyState } from 'react-use-websocket';
 import { ReceivedDataPanel } from './ReceivedDataPanel';
 import { DataStatisticsPanel } from './DataStatisticsPanel';
 import { DATA_REQUEST_COMMANDS, parseReceivedData, uint8ArrayToHex } from '@/utils';
-import { useDataReceive, useDataStatistics } from '@/hooks';
 
-const DataReceive: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
+import type { DataReceiveStore, DataStatisticsStore } from '@/types/DataStatsStore';
+
+interface DataReceiveProps extends WebSocketHook {
+  dataReceive: DataReceiveStore;
+  dataStatistics: DataStatisticsStore;
+}
+
+const DataReceive: FC<DataReceiveProps> = ({ sendMessage, lastMessage, readyState, dataReceive, dataStatistics }) => {
   const {
     receivedData,
     errorData,
@@ -15,10 +21,14 @@ const DataReceive: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }
     clearReceivedData,
     clearErrorData,
     getDataSummary,
-  } = useDataReceive();
+  } = dataReceive;
 
-  const { statistics, updateStatistics, resetStatistics, getOverallPerformance } =
-    useDataStatistics();
+  const {
+    statistics,
+    updateStatistics,
+    resetStatistics,
+    getOverallPerformance
+  } = dataStatistics;
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const requestIndexRef = useRef(0);

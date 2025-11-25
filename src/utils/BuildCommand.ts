@@ -10,15 +10,55 @@ import {
   type ControllerType,
   type DataRequestType,
 } from '@/types';
-interface BuildCommandArgs<B extends Extract<keyof typeof CmdB1, 'Mode' | 'Motion' | 'Speed'>> {
+
+const standard_can = [
+  0xAA, 0x55, 0x01, 0x01, 0x01,
+  0x00, 0x00, 0x08,
+  0x00,
+];
+function buildCanCommand(arg: string): Uint8Array
+{
+  const buf = new ArrayBuffer(20);
+  const dv = new DataView(buf);
+  for (let i = 0; i <= 4; i++) {
+    dv.setUint8(i, standard_can[i]);
+  }
+  dv.setUint8(5, 0x23);
+  dv.setUint8(6, 0x01);
+  for (let i = 7; i <= 9; i++)
+  {
+    dv.setUint8(i, standard_can[i-2]);
+  }
+  const parts = arg.trim().split(/\s+/);
+  parts.forEach((p, i) =>
+  {
+    const v = parseInt(p, 16);
+    if (Number.isNaN(v) || v < 0 || v > 0xff)
+    {
+      throw new Error(`無效的十六進位: "${p}"`);
+    }
+    dv.setUint8(10 + i, v);
+  });
+  dv.setUint8(18, standard_can[8]);
+  let sum = 0;
+  for (let i = 2; i <= 18; i++)
+  {
+    sum += dv.getUint8(i);
+  }
+  dv.setUint8(19, sum & 0xff);
+
+  return new Uint8Array(buf);
+}
+
+interface buildVehicleCommandArgs<B extends Extract<keyof typeof CmdB1, 'Mode' | 'Motion' | 'Speed'>> {
   control: ControllerType;
   b1: B;
   arg: CmdB2Type<B>;
   motor?: Extract<keyof typeof CmdB1, 'Wheel_Left' | 'Wheel_Right'>;
 }
 
-function buildCommand<B extends Extract<keyof typeof CmdB1, 'Mode' | 'Motion' | 'Speed'>>(
-  options: BuildCommandArgs<B>,
+function buildVehicleCommand<B extends Extract<keyof typeof CmdB1, 'Mode' | 'Motion' | 'Speed'>>(
+  options: buildVehicleCommandArgs<B>,
 ): Uint8Array {
   const { control, b1, arg, motor } = options;
   let speed_or_arg = b1 === 'Speed' ? arg : CmdB2[b1]?.[arg as keyof (typeof CmdB2)[typeof b1]];
@@ -90,7 +130,8 @@ const DATA_REQUEST_COMMANDS = {
 };
 
 export {
-  buildCommand,
+  buildCanCommand,
+  buildVehicleCommand,
   buildDataRequestCommand,
   DATA_REQUEST_COMMANDS,
   buildRobotCommand,

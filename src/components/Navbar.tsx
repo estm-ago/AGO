@@ -1,16 +1,17 @@
 import { type FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Car, Database, Wifi, Bot } from 'lucide-react';
+import { Car, Database, Wifi, Bot, Cat } from 'lucide-react';
 import { ReadyState } from 'react-use-websocket';
 
 interface NavbarProps {
   controlReadyState?: ReadyState;
   dataReadyState?: ReadyState;
   robotReadyState?: ReadyState;
+  serialReadyState?: ReadyState;
 }
 
-export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState, robotReadyState }) => {
+export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState, robotReadyState, serialReadyState }) => {
   const location = useLocation();
 
   const getConnectionBadge = (readyState?: ReadyState) => {
@@ -61,6 +62,7 @@ export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState, rob
                 {getConnectionBadge(dataReadyState)}
               </Button>
             </Link>
+
             <Link to='/robotic'>
               <Button
                 variant={location.pathname === '/robotic' ? 'default' : 'outline'}
@@ -69,6 +71,17 @@ export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState, rob
                 <Bot className='w-4 h-4' />
                 機器手臂控制
                 {getConnectionBadge(robotReadyState)}
+              </Button>
+            </Link>
+
+            <Link to='/test'>
+              <Button
+                variant={location.pathname === '/test' ? 'default' : 'outline'}
+                className='flex items-center gap-2'
+              >
+                <Cat className='w-4 h-4' />
+                測試
+                {getConnectionBadge(serialReadyState)}
               </Button>
             </Link>
           </div>

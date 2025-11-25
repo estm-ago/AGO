@@ -1,5 +1,5 @@
-import type { ReceivedData } from '@/types';
 import { useState, useCallback } from 'react';
+import { CmdB0, CmdB1, type ReceivedData } from "@/types";
 
 export function useDataReceive() {
   const [receivedData, setReceivedData] = useState<ReceivedData[]>([]);
@@ -28,18 +28,18 @@ export function useDataReceive() {
       setSuccessData((prev) => [data, ...prev].slice(0, 50));
 
       // 更新最新的馬達數據（只使用成功數據）
-      if (data.cmd0 === 0x00 && typeof data.parsedValue === 'number') {
+      if (data.cmd0 === CmdB0.DataControl && typeof data.parsedValue === 'number') {
         switch (data.cmd1) {
-          case 0x10: // CMD_B1_LEFT_SPEED
+          case CmdB1.LeftSpeed:
             setLatestMotorData((prev) => ({ ...prev, leftSpeed: data.parsedValue as number }));
             break;
-          case 0x11: // CMD_B1_RIGHT_SPEED
+          case CmdB1.RightSpeed:
             setLatestMotorData((prev) => ({ ...prev, rightSpeed: data.parsedValue as number }));
             break;
-          case 0x20: // CMD_B1_LEFT_DUTY
+          case CmdB1.LeftDuty:
             setLatestMotorData((prev) => ({ ...prev, leftDuty: data.parsedValue as number }));
             break;
-          case 0x21: // CMD_B1_RIGHT_DUTY
+          case CmdB1.RightDuty:
             setLatestMotorData((prev) => ({ ...prev, rightDuty: data.parsedValue as number }));
             break;
         }

@@ -1,6 +1,10 @@
+import { type WSCanFrame, WSCan } from './WSCan';
 import { useDataReceive } from './useDataReceive';
 import { useDataStatistics } from './useDataStatistics';
 import { useVehicleLogs } from './useVehicleLogs';
 import { useVehicleStatus } from './useVehicleStatus';
 
-export { useDataReceive, useDataStatistics, useVehicleLogs, useVehicleStatus };
+export { 
+    type WSCanFrame, WSCan,
+    useDataReceive, useDataStatistics, useVehicleLogs, useVehicleStatus
+};

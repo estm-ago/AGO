@@ -2,7 +2,13 @@ import { type FC } from 'react';
 import DataReceive from '../components/DataReceive';
 import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 
-const DataPage: FC<WebSocketHook> = (data_ws) => {
+import type { DataReceiveStore, DataStatisticsStore } from '@/types/DataStatsStore';
+interface DataPageProps extends WebSocketHook {
+  dataReceive: DataReceiveStore;
+  dataStatistics: DataStatisticsStore;
+}
+
+const DataPage: FC<DataPageProps> = (data_ws) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='container mx-auto py-8'>

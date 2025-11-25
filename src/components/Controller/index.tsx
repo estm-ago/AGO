@@ -13,7 +13,7 @@ import {
   type MapCmdB2Type,
   type MotorCommandOpts,
 } from '@/types';
-import { buildCommand, buildMapCommand } from '@/utils/BuildCommand';
+import { buildVehicleCommand, buildMapCommand } from '@/utils/BuildCommand';
 import { useVehicleLogs, useVehicleStatus } from '@/hooks';
 import Rfid from './Rfid';
 
@@ -66,21 +66,21 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     let CarController = 'VehicleControl' as ControllerType;
     const buffers: Uint8Array[] = [];
     buffers.push(
-      buildCommand({
+      buildVehicleCommand({
         control: CarController,
         b1: 'Motion',
         arg: 'Forward',
       }),
     );
     buffers.push(
-      buildCommand({
+      buildVehicleCommand({
         control: CarController,
         b1: 'Speed',
         arg: 0x14,
       }),
     );
     buffers.push(
-      buildCommand({
+      buildVehicleCommand({
         control: CarController,
         b1: 'Mode',
         arg: 'Track',
@@ -97,7 +97,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
 
     if (opts.motion !== undefined) {
       buffers.push(
-        buildCommand({
+        buildVehicleCommand({
           control: CarController,
           b1: 'Motion',
           arg: opts.motion,
@@ -106,7 +106,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     }
     if (opts.speed !== undefined) {
       buffers.push(
-        buildCommand({
+        buildVehicleCommand({
           control: CarController,
           b1: 'Speed',
           arg: opts.speed,
@@ -115,7 +115,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     }
     if (opts.mode !== undefined) {
       buffers.push(
-        buildCommand({
+        buildVehicleCommand({
           control: CarController,
           b1: 'Mode',
           arg: opts.mode,
@@ -139,7 +139,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     const buffers: Uint8Array[] = [];
     if (opts.motion !== undefined) {
       buffers.push(
-        buildCommand({
+        buildVehicleCommand({
           control: CarController,
           motor: opts.motor,
           b1: 'Motion',
@@ -149,7 +149,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
     }
     if (opts.speed !== undefined) {
       buffers.push(
-        buildCommand({
+        buildVehicleCommand({
           control: CarController,
           motor: opts.motor,
           b1: 'Speed',
@@ -158,7 +158,7 @@ const Controller: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState })
       );
     }
     buffers.push(
-      buildCommand({
+      buildVehicleCommand({
         control: CarController,
         motor: opts.motor,
         b1: 'Mode',

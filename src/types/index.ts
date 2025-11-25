@@ -7,7 +7,7 @@ type ArmCmdB2Type = (typeof ArmCmdB2)[keyof typeof ArmCmdB2];
 type MapCmdB1Type = (typeof MapCmdB1)[keyof typeof MapCmdB1];
 type MapCmdB2Type = (typeof MapCmdB2)[keyof typeof MapCmdB2];
 type ControllerType = Extract<keyof typeof CmdB0, 'VehicleControl' | 'WheelControl'>;
-type BuildCommandArgs = {
+type buildVehicleCommandArgs = {
   [B in Extract<keyof typeof CmdB1, 'Mode' | 'Motion' | 'Speed'>]: [
     control: ControllerType,
     b1: B,
@@ -21,7 +21,7 @@ export type {
   CmdB2Type,
   ArmCmdB1Type,
   ArmCmdB2Type,
-  BuildCommandArgs,
+  buildVehicleCommandArgs,
   DataRequestType,
   ControllerType,
   MapCmdB1Type,

@@ -8,15 +8,17 @@ interface LayoutProps {
   controlReadyState?: ReadyState;
   dataReadyState?: ReadyState;
   robotReadyState?: ReadyState;
+  serialReadyState?: ReadyState;
 }
 
-export const Layout: FC<LayoutProps> = ({ controlReadyState, dataReadyState, robotReadyState }) => {
+export const Layout: FC<LayoutProps> = ({ controlReadyState, dataReadyState, robotReadyState, serialReadyState }) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <Navbar
         controlReadyState={controlReadyState}
         dataReadyState={dataReadyState}
         robotReadyState={robotReadyState}
+        serialReadyState={serialReadyState}
       />
       <main>
         <Outlet />
