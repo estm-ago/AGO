@@ -1,6 +1,5 @@
 import { useVehicleLogs, useVehicleStatus } from '@/hooks';
 import { useEffect, useState, type FC } from 'react';
-import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 import { Header } from './Header';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
@@ -10,8 +9,9 @@ import { Button } from '../ui/button';
 import { buildRobotCommand, u8ArrayToBool } from '@/utils';
 import { ArmCmdB1, ArmCmdB2 } from '@/types';
 import { ReadyState } from 'react-use-websocket';
+import { sendCMD, type ControllerProps } from '../Controller';
 
-const Robotic: FC<WebSocketHook> = ({ sendMessage, lastMessage, readyState }) => {
+const Robotic: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CANPortConfig, setCANPortConfig }) => {
   const { getConnectionStatus } = useVehicleStatus();
   const connectionStatus = getConnectionStatus(readyState);
   const isDisabled = readyState !== ReadyState.OPEN;

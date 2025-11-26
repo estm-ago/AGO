@@ -24,7 +24,7 @@ export interface ControllerProps extends WebSocketHook {
   setCANPortConfig: SetCANPortConfig;
 }
 
-async function sendCMD(
+export async function sendCMD(
   webSktState: ReadyState,
   sendMessage: (data: ArrayBufferLike | string) => void,
   CANPortConfig: CANPortConfig,
