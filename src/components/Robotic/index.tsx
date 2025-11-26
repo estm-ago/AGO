@@ -1,4 +1,3 @@
-import { useVehicleLogs, useVehicleStatus } from '@/hooks';
 import { useEffect, useState, type FC } from 'react';
 import { Header } from './Header';
 import { Slider } from '../ui/slider';
@@ -9,12 +8,13 @@ import { Button } from '../ui/button';
 import { buildRobotCommand, u8ArrayToBool } from '@/utils';
 import { ArmCmdB1, ArmCmdB2 } from '@/types';
 import { ReadyState } from 'react-use-websocket';
-import { sendCMD, type ControllerProps } from '../Controller';
+import { sendCMD } from '../Controller';
+import {
+  useVehicleLogs, useVehicleStatus, type WebAndSerialProps,
+} from '@/hooks'
 
-const Robotic: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CANPortConfig, setCANPortConfig }) => {
+const Robotic: FC<WebAndSerialProps> = ({ sendMessage, lastMessage, readyState, CANPortConfig, setCANPortConfig }) => {
   const { getConnectionStatus } = useVehicleStatus();
-  const connectionStatus = getConnectionStatus(readyState);
-  const isDisabled = readyState !== ReadyState.OPEN;
   // const { logs, addLog, clearLogs } = useVehicleLogs();
   const { addLog } = useVehicleLogs();
   const [isMoving, setIsMoving] = useState(false);
@@ -96,16 +96,19 @@ const Robotic: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CA
 
     entries.forEach(([key, val], _) => {
       const def = JOINTS.find((j) => j.key === key)!;
-      const cmd = buildRobotCommand({
-        b1: def.cmd,
-        b2: ArmCmdB2.Set,
-        value: val,
-      });
+      const buffers: Uint8Array[] = [];
+      buffers.push(
+        buildRobotCommand({
+          b1: def.cmd,
+          b2: ArmCmdB2.Set,
+          value: val,
+        })
+      );
       // setTimeout(() => {
       //   sendMessage(cmd);
       //   addLog(`載入 ${def.label} → ${val}°`, true);
       // }, idx * 200);
-      sendMessage(cmd);
+      sendCMD(readyState, sendMessage, CANPortConfig, setCANPortConfig, buffers);
     });
 
     const totalDelay = entries.length * 200;
@@ -116,13 +119,16 @@ const Robotic: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CA
     setIsMoving(false);
     const b1Commands = Object.values(ArmCmdB1) as (typeof ArmCmdB1)[keyof typeof ArmCmdB1][];
     b1Commands.forEach((b1Cmd, idx) => {
-      const stopCmd = buildRobotCommand({
-        b1: b1Cmd,
-        b2: ArmCmdB2.Stop,
-        value: 0,
-      });
+      const buffers: Uint8Array[] = [];
+      buffers.push(
+        buildRobotCommand({
+          b1: b1Cmd,
+          b2: ArmCmdB2.Stop,
+          value: 0,
+        })
+      );
       setTimeout(() => {
-        sendMessage(stopCmd);
+        sendCMD(readyState, sendMessage, CANPortConfig, setCANPortConfig, buffers);
         addLog(`緊急停止：b1=0x${b1Cmd.toString(16)}`, true);
       }, idx * 100);
     });
@@ -141,14 +147,16 @@ const Robotic: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CA
   const updateJoint = (key: JointKey, [val]: number[]) => {
     setJoints((prev) => ({ ...prev, [key]: val }));
     const def = JOINTS.find((j) => j.key === key)!;
-    const command = buildRobotCommand({
-      b1: def.cmd,
-      b2: ArmCmdB2.Set,
-      value: val,
-    });
-    // sendMessage(command);
+    const buffers: Uint8Array[] = [];
+    buffers.push(
+      buildRobotCommand({
+        b1: def.cmd,
+        b2: ArmCmdB2.Set,
+        value: val,
+      })
+    );
     setTimeout(() => {
-      sendMessage(command);
+      sendCMD(readyState, sendMessage, CANPortConfig, setCANPortConfig, buffers);
     }, 500);
   };
   useEffect(() => {
@@ -163,6 +171,12 @@ const Robotic: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CA
       });
     }
   }, [lastMessage, addLog]);
+
+  const connectionStatus = getConnectionStatus(readyState);
+  const webSktIsDisabled = readyState !== ReadyState.OPEN;
+  const canIsDisabled = CANPortConfig.readyState !== ReadyState.OPEN;
+  const disabled = webSktIsDisabled || canIsDisabled;
+
   return (
     <div className='max-w-4xl  mx-auto p-6 space-y-6'>
       <Header connectionStatus={connectionStatus} />
@@ -183,7 +197,7 @@ const Robotic: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CA
                     <span className='text-sm text-gray-600'>{joints[key]}°</span>
                   </div>
                   <Slider
-                    disabled={isDisabled || isMoving}
+                    disabled={disabled || isMoving}
                     value={[joints[key]]}
                     onValueChange={(val) => updateJoint(key, val)}
                     min={min}
@@ -200,11 +214,11 @@ const Robotic: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CA
                   <Button
                     onClick={resetAllJoints}
                     variant='outline'
-                    disabled={isDisabled || isMoving}
+                    disabled={disabled || isMoving}
                   >
                     <RotateCcw /> 歸零
                   </Button>
-                  <Button onClick={emergencyStop} variant='destructive' disabled={isDisabled}>
+                  <Button onClick={emergencyStop} variant='destructive' disabled={disabled}>
                     <Square /> 緊急停止
                   </Button>
                 </div>
@@ -217,7 +231,7 @@ const Robotic: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CA
                         key={i}
                         onClick={() => loadPosition(pos)}
                         variant='outline'
-                        disabled={isDisabled || isMoving}
+                        disabled={disabled || isMoving}
                         className='w-full justify-start'
                       >
                         <Target className='mr-2' /> {pos.name}

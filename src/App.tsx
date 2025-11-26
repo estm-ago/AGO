@@ -4,10 +4,8 @@ import { Layout } from './components/Layout';
 import { ControlPage, DataPage, HomePage, RoboticPage } from './pages';
 import useWebSocket from 'react-use-websocket';
 import { WEBSOCKET_CONFIG } from './config/websocket';
-import type { CANPortConfig } from './components/SerialConsole/serialPortHelpers'
-
 import SerialConsole from "./components/SerialConsole";
-import { useDataReceive, useDataStatistics } from "@/hooks";
+import { useDataReceive, useDataStatistics, type CANPortConfig} from "@/hooks";
 import { ReadyState } from 'react-use-websocket';
 
 function App() {
@@ -58,7 +56,16 @@ function App() {
               dataStatistics={dataStatistics}
             />}
           />
-          <Route path='robotic' element={<RoboticPage {...robot_webSocketHook} />} />
+          <Route
+            path='robotic'
+            element={
+              <RoboticPage
+                {...robot_webSocketHook}
+                CANPortConfig={CANPortConfig}
+                setCANPortConfig={setCANPortConfig}
+              />
+            }
+          />
           <Route
             path='test'
             element={

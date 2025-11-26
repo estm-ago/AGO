@@ -1,5 +1,4 @@
 import { useEffect, useState, type FC } from 'react';
-import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 import { ReadyState } from 'react-use-websocket';
 import { VehicleHeader } from './VehicleHeader';
 import { DirectionControls } from './DirectionControls';
@@ -14,15 +13,11 @@ import {
   type MotorCommandOpts,
 } from '@/types';
 import { buildVehicleCommand, buildMapCommand } from '@/utils/BuildCommand';
-import { useVehicleLogs, useVehicleStatus, type WSCanFrame } from '@/hooks';
+import {
+  type SetCANPortConfig, type WSCanFrame, sendWSCanFrame, type CANPortConfig,
+  useVehicleLogs, useVehicleStatus, type WebAndSerialProps,
+} from '@/hooks'
 import Rfid from './Rfid';
-import type { CANPortConfig, SetCANPortConfig } from '../SerialConsole/serialPortHelpers';
-import { sendWSCanFrame } from '../SerialConsole/WSCanSendReceive';
-
-export interface ControllerProps extends WebSocketHook {
-  CANPortConfig: CANPortConfig;
-  setCANPortConfig: SetCANPortConfig;
-}
 
 export async function sendCMD(
   webSktState: ReadyState,
@@ -42,7 +37,7 @@ export async function sendCMD(
     for (const buf of buffers)
     {
       const frame: WSCanFrame = {
-        id: 0x123,
+        id: 0x020,
         extended: false,
         rtr: false,
         dlc: buf.length,
@@ -53,7 +48,7 @@ export async function sendCMD(
   }
 }
 
-const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState, CANPortConfig, setCANPortConfig }) => {
+const Controller: FC<WebAndSerialProps> = ({ sendMessage, lastMessage, readyState, CANPortConfig, setCANPortConfig }) => {
   const {
     speed,
     isMoving,
@@ -65,12 +60,8 @@ const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState,
 
   const { logs, addLog, clearLogs } = useVehicleLogs();
   const [trackMode, setTrackMode] = useState<'manual' | 'auto'>('manual');
-  const [disabled, setDisabled] = useState(false);
   const [open, setOpen] = useState(false);
   const [uid, setUid] = useState<number>(0);
-  useEffect(() => {
-    setDisabled(trackMode !== 'manual');
-  }, [trackMode]);
 
   useEffect(() => {
     if (!lastMessage) return;
@@ -284,6 +275,10 @@ const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState,
   const connectionStatus = getConnectionStatus(readyState);
   const webSktIsDisabled = readyState !== ReadyState.OPEN;
   const canIsDisabled = CANPortConfig.readyState !== ReadyState.OPEN;
+  const [disabled, setDisabled] = useState(false);
+  useEffect(() => {
+    setDisabled(trackMode !== 'manual' || webSktIsDisabled || canIsDisabled);
+  }, [trackMode]);
 
   return (
     <div className='max-w-4xl mx-auto p-6 space-y-6'>
@@ -303,7 +298,7 @@ const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState,
           onRightSpinForward={handleRightSpinForward}
           onLeftSpinBack={handleLeftSpinBack}
           onRightSpinBack={handleRightSpinBack}
-          disabled={(webSktIsDisabled && canIsDisabled) || disabled}
+          disabled={disabled}
         />
 
         <div className='space-y-6'>
@@ -315,7 +310,7 @@ const Controller: FC<ControllerProps> = ({ sendMessage, lastMessage, readyState,
             trackMode={trackMode}
             setTrackMode={setTrackMode}
             sendAutoControl={sendAutoControl}
-            disabled={(webSktIsDisabled && canIsDisabled) || disabled}
+            disabled={disabled}
           />
         </div>
       </div>

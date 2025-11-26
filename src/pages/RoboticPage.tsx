@@ -1,8 +1,9 @@
 import Robotic from '@/components/Robotic';
+import type { WebAndSerialProps } from '@/hooks';
 import type { FC } from 'react';
 import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 
-const RoboticPage: FC<WebSocketHook> = (robot_ws) => {
+const RoboticPage: FC<WebAndSerialProps> = (robot_ws) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='container mx-auto py-8'>

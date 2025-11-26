@@ -1,7 +1,8 @@
 import { type FC } from 'react';
-import Controller, { type ControllerProps } from '../components/Controller';
+import Controller from '../components/Controller';
+import type { WebAndSerialProps } from '@/hooks';
 
-const ControlPage: FC<ControllerProps> = (controller_ws) => {
+const ControlPage: FC<WebAndSerialProps> = (controller_ws) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='container mx-auto py-8'>

@@ -1,18 +1,21 @@
 import { useEffect, useRef, useState, type FC } from "react";
-import { type CANPortConfig, type SetCANPortConfig, openSerialPort, closeSerialPort } from "./serialPortHelpers";
-import { type WSCanFrame } from '@/hooks'
+import {
+  type SetCANPortConfig, type WSCanFrame, sendWSCanFrame, type CANPortConfig,
+  openSerialPort, closeSerialPort
+} from '@/hooks'
 import { CmdB0, CmdB1, type ReceivedData } from "@/types";
 import type { DataReceiveStore, DataStatisticsStore } from '@/types/DataStatsStore';
-import { sendWSCanFrame } from "./WSCanSendReceive";
 
-interface SerialConsoleProps {
+interface SerialConsoleProps
+{
   CANPortConfig: CANPortConfig;
   setCANPortConfig: SetCANPortConfig;
   dataReceive: DataReceiveStore;
   dataStatistics: DataStatisticsStore;
 }
 
-function hexStringToBytes(str: string): Uint8Array {
+function hexStringToBytes(str: string): Uint8Array
+{
   // 1. 分割（用空白、逗號都可）
   const parts = str.trim().split(/\s+/);
 
@@ -29,7 +32,8 @@ function hexStringToBytes(str: string): Uint8Array {
   return new Uint8Array(bytes);
 }
 
-function bytesToHex(bytes: ArrayLike<number>): string {
+function bytesToHex(bytes: ArrayLike<number>): string
+{
   let result = "";
   for (let i = 0; i < bytes.length; i++) {
     result += bytes[i]!.toString(16).padStart(2, "0") + " ";
@@ -37,7 +41,8 @@ function bytesToHex(bytes: ArrayLike<number>): string {
   return result.trimEnd();
 }
 
-const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig, dataReceive, dataStatistics }) => {
+const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig, dataReceive, dataStatistics }) =>
+{
   if (!("serial" in navigator)) {
     throw new Error("此瀏覽器不支援 Web Serial API");
   }
