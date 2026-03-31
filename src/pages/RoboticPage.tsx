@@ -1,7 +1,13 @@
 import Robotic from '@/components/Robotic';
 import type { WebAndSerialProps } from '@/hooks';
 import type { FC } from 'react';
-import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
+import { Bot } from 'lucide-react';
+
+const RoboticRouteConfig = {
+  key: 'robotic',
+  label: '機器手臂控制',
+  icon: Bot,
+};
 
 const RoboticPage: FC<WebAndSerialProps> = (robot_ws) => {
   return (
@@ -18,4 +24,4 @@ const RoboticPage: FC<WebAndSerialProps> = (robot_ws) => {
   );
 };
 
-export default RoboticPage;
+export { RoboticPage, RoboticRouteConfig };

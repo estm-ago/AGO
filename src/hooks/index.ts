@@ -6,6 +6,7 @@ import { useDataStatistics } from './useDataStatistics';
 import { useVehicleLogs } from './useVehicleLogs';
 import { useVehicleStatus } from './useVehicleStatus';
 import { sendWSCanFrame, startReadLoop, type ReadLoopOptions } from './WSCanSendReceive';
+import type { DataReceiveStore, DataStatisticsStore } from '@/types/DataStatsStore';
 
 interface WebAndSerialProps extends WebSocketHook
 {
@@ -13,10 +14,19 @@ interface WebAndSerialProps extends WebSocketHook
   setCANPortConfig: SetCANPortConfig;
 }
 
+interface SerialConsoleProps
+{
+  CANPortConfig: CANPortConfig;
+  setCANPortConfig: SetCANPortConfig;
+  dataReceive: DataReceiveStore;
+  dataStatistics: DataStatisticsStore;
+}
+
 export { 
-    type WebAndSerialProps,
-    type CANPortConfig, type SetCANPortConfig, openSerialPort, closeSerialPort,
-    type ReadLoopOptions, startReadLoop, sendWSCanFrame,
-    type WSCanFrame, WSCan,
-    useDataReceive, useDataStatistics, useVehicleLogs, useVehicleStatus
+  type WebAndSerialProps,
+  type CANPortConfig, type SetCANPortConfig, openSerialPort, closeSerialPort,
+  type ReadLoopOptions, startReadLoop, sendWSCanFrame,
+  type WSCanFrame, WSCan,
+  useDataReceive, useDataStatistics, useVehicleLogs, useVehicleStatus,
+  type SerialConsoleProps,
 };

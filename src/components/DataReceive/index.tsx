@@ -6,6 +6,7 @@ import { DataStatisticsPanel } from './DataStatisticsPanel';
 import { DATA_REQUEST_COMMANDS, parseReceivedData, uint8ArrayToHex } from '@/utils';
 
 import type { DataReceiveStore, DataStatisticsStore } from '@/types/DataStatsStore';
+import { BatteryIcon } from './battery';
 
 interface DataReceiveProps extends WebSocketHook {
   dataReceive: DataReceiveStore;
@@ -190,6 +191,8 @@ const DataReceive: FC<DataReceiveProps> = ({ sendMessage, lastMessage, readyStat
           </div>
         </div>
       </div>
+      
+      <BatteryIcon level={50} charging={false} />
 
       {/* 數據統計面板 */}
       <div className='mb-6'>

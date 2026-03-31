@@ -1,18 +1,9 @@
 import { useEffect, useRef, useState, type FC } from "react";
 import {
-  type SetCANPortConfig, type WSCanFrame, sendWSCanFrame, type CANPortConfig,
+  type SerialConsoleProps, type SetCANPortConfig, type WSCanFrame, sendWSCanFrame, type CANPortConfig,
   openSerialPort, closeSerialPort
 } from '@/hooks'
 import { CmdB0, CmdB1, type ReceivedData } from "@/types";
-import type { DataReceiveStore, DataStatisticsStore } from '@/types/DataStatsStore';
-
-interface SerialConsoleProps
-{
-  CANPortConfig: CANPortConfig;
-  setCANPortConfig: SetCANPortConfig;
-  dataReceive: DataReceiveStore;
-  dataStatistics: DataStatisticsStore;
-}
 
 function hexStringToBytes(str: string): Uint8Array
 {

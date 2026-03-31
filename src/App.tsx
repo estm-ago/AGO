@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { ControlPage, DataPage, HomePage, RoboticPage } from './pages';
+import {
+  ControlRouteConfig, DataRouteConfig, RoboticRouteConfig, UsbCANRouteConfig,
+  HomePage, ControlPage, DataPage, RoboticPage, UsbCANPage
+} from './pages';
 import useWebSocket from 'react-use-websocket';
 import { WEBSOCKET_CONFIG } from './config/websocket';
-import SerialConsole from "./components/SerialConsole";
 import { useDataReceive, useDataStatistics, type CANPortConfig} from "@/hooks";
 import { ReadyState } from 'react-use-websocket';
 
@@ -39,7 +41,7 @@ function App() {
         >
           <Route index element={<HomePage />} />
           <Route
-            path='control'
+            path={ControlRouteConfig.key}
             element={
               <ControlPage
                 {...control_webSocketHook}
@@ -49,15 +51,17 @@ function App() {
             }
           />
           <Route
-            path='data'
-            element={<DataPage
-              {...data_webSocketHook}
-              dataReceive={dataReceive}
-              dataStatistics={dataStatistics}
-            />}
+            path={DataRouteConfig.key}
+            element={
+              <DataPage
+                {...data_webSocketHook}
+                dataReceive={dataReceive}
+                dataStatistics={dataStatistics}
+              />
+          }
           />
           <Route
-            path='robotic'
+            path={RoboticRouteConfig.key}
             element={
               <RoboticPage
                 {...robot_webSocketHook}
@@ -67,9 +71,9 @@ function App() {
             }
           />
           <Route
-            path='test'
+            path={UsbCANRouteConfig.key}
             element={
-              <SerialConsole
+              <UsbCANPage
                 CANPortConfig={CANPortConfig}
                 setCANPortConfig={setCANPortConfig}
                 dataReceive={dataReceive}

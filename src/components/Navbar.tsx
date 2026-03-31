@@ -1,8 +1,9 @@
 import { type FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Car, Database, Wifi, Bot, Cat } from 'lucide-react';
+import { Wifi } from 'lucide-react';
 import { ReadyState } from 'react-use-websocket';
+import { navRoutes } from '@/pages';
 
 interface NavbarProps {
   controlReadyState?: ReadyState;
@@ -11,8 +12,15 @@ interface NavbarProps {
   serialReadyState?: ReadyState;
 }
 
-export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState, robotReadyState, serialReadyState }) => {
+export const Navbar: FC<NavbarProps> = (props) => {
   const location = useLocation();
+
+  const stateMap: Record<string, any> = {
+    control: props.controlReadyState,
+    data: props.dataReadyState,
+    robot: props.robotReadyState,
+    serial: props.serialReadyState,
+  };
 
   const getConnectionBadge = (readyState?: ReadyState) => {
     if (readyState === undefined) {
@@ -41,49 +49,18 @@ export const Navbar: FC<NavbarProps> = ({ controlReadyState, dataReadyState, rob
 
           {/* Navigation Links */}
           <div className='flex space-x-4'>
-            <Link to='/control'>
-              <Button
-                variant={location.pathname === '/control' ? 'default' : 'outline'}
-                className='flex items-center gap-2'
-              >
-                <Car className='w-4 h-4' />
-                車輛控制
-                {getConnectionBadge(controlReadyState)}
-              </Button>
-            </Link>
-
-            <Link to='/data'>
-              <Button
-                variant={location.pathname === '/data' ? 'default' : 'outline'}
-                className='flex items-center gap-2'
-              >
-                <Database className='w-4 h-4' />
-                數據接收
-                {getConnectionBadge(dataReadyState)}
-              </Button>
-            </Link>
-
-            <Link to='/robotic'>
-              <Button
-                variant={location.pathname === '/robotic' ? 'default' : 'outline'}
-                className='flex items-center gap-2'
-              >
-                <Bot className='w-4 h-4' />
-                機器手臂控制
-                {getConnectionBadge(robotReadyState)}
-              </Button>
-            </Link>
-
-            <Link to='/test'>
-              <Button
-                variant={location.pathname === '/test' ? 'default' : 'outline'}
-                className='flex items-center gap-2'
-              >
-                <Cat className='w-4 h-4' />
-                測試
-                {getConnectionBadge(serialReadyState)}
-              </Button>
-            </Link>
+            {navRoutes.map((item) => (
+              <Link key={item.key} to={`/${item.key}`}>
+                <Button
+                  variant={location.pathname === `/${item.key}` ? 'default' : 'outline'}
+                  className='flex items-center gap-2'
+                >
+                  <item.icon className='w-4 h-4' />
+                  {item.label}
+                  {getConnectionBadge(stateMap[item.key])}
+                </Button>
+              </Link>
+            ))}
           </div>
         </div>
       </div>

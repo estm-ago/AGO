@@ -110,4 +110,4 @@ const HomePage: FC = () => {
   );
 };
 
-export default HomePage; 
+export { HomePage }; 

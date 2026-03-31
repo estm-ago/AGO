@@ -1,6 +1,13 @@
 import { type FC } from 'react';
 import Controller from '../components/Controller';
 import type { WebAndSerialProps } from '@/hooks';
+import { Car } from 'lucide-react';
+
+const ControlRouteConfig = {
+  key: 'control',
+  label: '車輛控制',
+  icon: Car,
+};
 
 const ControlPage: FC<WebAndSerialProps> = (controller_ws) => {
   return (
@@ -17,4 +24,4 @@ const ControlPage: FC<WebAndSerialProps> = (controller_ws) => {
   );
 };
 
-export default ControlPage;
+export { ControlPage, ControlRouteConfig };
