@@ -16,14 +16,17 @@ export function useDataReceive() {
     // 所有數據都添加到總列表中（用於顯示）
     setReceivedData((prev) => [data, ...prev].slice(0, 50));
 
-    if (data.isError) {
+    if (data.isError)
+      {
       // 錯誤數據單獨存儲
       setErrorData((prev) => [data, ...prev].slice(0, 20));
       console.warn('❌ 錯誤數據已排除:', {
         error: data.parsedValue,
         timestamp: data.timestamp,
       });
-    } else {
+    }
+    else
+    {
       // 只有成功的數據才用於統計和更新馬達狀態
       setSuccessData((prev) => [data, ...prev].slice(0, 50));
 

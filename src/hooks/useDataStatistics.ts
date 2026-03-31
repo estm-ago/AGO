@@ -75,9 +75,12 @@ export function useDataStatistics() {
       // 更新總計數器
       newStats.totalReceived += 1;
 
-      if (data.isError) {
+      if (data.isError)
+      {
         newStats.errorCount += 1;
-      } else {
+      }
+      else
+      {
         newStats.successCount += 1;
 
         // 只處理成功的數據回傳

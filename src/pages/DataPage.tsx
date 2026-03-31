@@ -1,5 +1,5 @@
 import { type FC } from 'react';
-import DataReceive from '../components/DataReceive';
+import DataP from '../components/DataP';
 import type { WebSocketHook } from 'react-use-websocket/dist/lib/types';
 import type { DataReceiveStore, DataStatisticsStore } from '@/types/DataStatsStore';
 import { Database } from 'lucide-react';
@@ -24,7 +24,7 @@ const DataPage: FC<DataPageProps> = (data_ws) => {
           <p className='text-gray-600'>即時監控從ESP32車輛接收的馬達數據和系統狀態</p>
         </div>
 
-        <DataReceive {...data_ws} />
+        <DataP {...data_ws} />
       </div>
     </div>
   );

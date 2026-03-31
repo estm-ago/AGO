@@ -7,6 +7,8 @@ import { VehicleStatusPanel } from './VehicleStatusPanel';
 import { SystemLogs } from './SystemLogs';
 import { concatUint8Arrays, u8ArrayToBool } from '@/utils';
 import {
+  type SetCANPortConfig, type WSCanFrame, type CANPortConfig,
+  type WebAndSerialProps,
   type CarCommandOpts,
   type ControllerType,
   type MapCmdB2Type,
@@ -14,8 +16,7 @@ import {
 } from '@/types';
 import { buildVehicleCommand, buildMapCommand } from '@/utils/BuildCommand';
 import {
-  type SetCANPortConfig, type WSCanFrame, sendWSCanFrame, type CANPortConfig,
-  useVehicleLogs, useVehicleStatus, type WebAndSerialProps,
+  WSCan, useVehicleLogs, useVehicleStatus, 
 } from '@/hooks'
 import Rfid from './Rfid';
 
@@ -43,7 +44,7 @@ export async function sendCMD(
         dlc: buf.length,
         data: buf,
       };
-      await sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
+      await WSCan.sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
     }
   }
 }

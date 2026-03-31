@@ -13,6 +13,7 @@ interface ReceivedData {
   isError: boolean;
   errorCode?: number;
 }
+
 // 數據統計結構
 interface DataStatistics {
   totalReceived: number;
@@ -73,12 +74,14 @@ interface LogEntry {
   message: string;
   success: boolean;
 }
+
 interface CarCommandOpts {
   mode?: CmdB2Type<'Mode'>;
   motion?: CmdB2Type<'Motion'>;
   speed?: number;
   direction: string;
 }
+
 interface MotorCommandOpts {
   motor: Extract<keyof typeof CmdB1, 'Wheel_Left' | 'Wheel_Right'>;
   // mode?: (typeof CmdB2)['Mode']['Free'];

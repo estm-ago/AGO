@@ -1,4 +1,5 @@
 import { CmdB0, CmdB1, CmdB2, ArmCmdB1, ArmCmdB2, MapCmdB1, MapCmdB2 } from './define';
+
 type CmdB0Type = (typeof CmdB0)[keyof typeof CmdB0];
 type CmdB1Type = (typeof CmdB1)[keyof typeof CmdB1];
 type CmdB2Type<C extends keyof typeof CmdB2> = C extends 'Speed' ? number : keyof (typeof CmdB2)[C];
@@ -28,4 +29,5 @@ export type {
   MapCmdB2Type,
 };
 export type * from './interfaces';
-export { CmdB0, CmdB1, CmdB2, ArmCmdB1, ArmCmdB2, MapCmdB1, MapCmdB2 };
+export type * from './WSCan';
+export * from './define';

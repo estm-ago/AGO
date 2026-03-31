@@ -1,16 +1,6 @@
-import type { Dispatch, SetStateAction } from 'react';
-import { startReadLoop, type ReadLoopOptions } from "./WSCanSendReceive";
+import { startReadLoop, type ReadLoopOptions } from "./useWSCan";
 import { ReadyState } from 'react-use-websocket';
-
-export interface CANPortConfig {
-  readyState: ReadyState,
-  port: SerialPort | null,
-  baudRate: number;
-  log: string;
-  readLoopOptions: ReadLoopOptions | null;
-  reader: ReadableStreamDefaultReader | null;
-}
-export type SetCANPortConfig = Dispatch<SetStateAction<CANPortConfig>>;
+import { type CANPortConfig, type SetCANPortConfig } from '@/types';
 
 export async function openSerialPort (
   options: CANPortConfig,

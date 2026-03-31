@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState, type FC } from "react";
+import { WSCan, openSerialPort, closeSerialPort} from '@/hooks'
 import {
-  type SerialConsoleProps, type SetCANPortConfig, type WSCanFrame, sendWSCanFrame, type CANPortConfig,
-  openSerialPort, closeSerialPort
-} from '@/hooks'
-import { CmdB0, CmdB1, type ReceivedData } from "@/types";
+  CmdB0, CmdB1, type ReceivedData,
+  type SerialConsoleProps, type SetCANPortConfig, type WSCanFrame, type CANPortConfig,
+} from '@/types';
+import {  } from "@/types";
 
 function hexStringToBytes(str: string): Uint8Array
 {
-  // 1. 分割（用空白、逗號都可）
   const parts = str.trim().split(/\s+/);
 
-  // 2. 每個字串轉成 0~255
   const bytes = parts.map((p) => {
     const v = parseInt(p, 16);
     if (Number.isNaN(v) || v < 0 || v > 255) {
@@ -19,8 +18,18 @@ function hexStringToBytes(str: string): Uint8Array
     return v;
   });
 
-  // 3. 回傳 Uint8Array
   return new Uint8Array(bytes);
+}
+
+function hexToUint16(hexStr: string): number
+{
+  const value = parseInt(hexStr.trim(), 16);
+
+  if (isNaN(value) || value < 0 || value > 65535) {
+    throw new Error(`非法的 16 位元十六進位數值: "${hexStr}"`);
+  }
+
+  return value;
 }
 
 function bytesToHex(bytes: ArrayLike<number>): string
@@ -43,7 +52,8 @@ const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig
   const isConnected =
     !!serialPort && serialPort.readable !== null && serialPort.writable !== null;
   const [status, setStatus] = useState<string>("尚未連線");
-  const [input, setInput] = useState<string>(
+  const [input_adr, setInputAdr] = useState<string>("123");
+  const [input_msg, setInputMsg] = useState<string>(
     "10 10 01 90 00 00 00 00"
   );
   useEffect(() => {
@@ -116,15 +126,16 @@ const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig
 
   const handleSend = async () => {
     try {
-      const datas = hexStringToBytes(input);
+      const adr = hexToUint16(input_adr);
+      const datas = hexStringToBytes(input_msg);
       const frame: WSCanFrame = {
-        id: 0x123,
+        id: adr,
         extended: false,
         rtr: false,
         dlc: datas.length,
         data: datas,
       };
-      await sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
+      await WSCan.sendWSCanFrame(frame, CANPortConfig, setCANPortConfig);
     } catch(err: any) {
       setStatus(`送出失敗: ${err?.message ?? String(err)}`);
     }
@@ -145,12 +156,21 @@ const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig
 
       <div style={{ marginBottom: "0.5rem" }}>
         <label>
-          傳送十六進位資料：
+          傳送至：
           <br />
           <input
             style={{ width: "100%", fontFamily: "monospace" }}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            value={input_adr}
+            onChange={(e) => setInputAdr(e.target.value)}
+          />
+        </label>
+        <label>
+          傳送資料：
+          <br />
+          <input
+            style={{ width: "100%", fontFamily: "monospace" }}
+            value={input_msg}
+            onChange={(e) => setInputMsg(e.target.value)}
           />
         </label>
       </div>
