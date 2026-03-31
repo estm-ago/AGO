@@ -1,5 +1,5 @@
 
-import { WSCan, startReadLoop, type ReadLoopOptions } from './useWSCan';
+import { WSCan } from './useWSCan';
 import { closeSerialPort, openSerialPort } from './serialPortHelpers';
 import { useDataReceive } from './useDataReceive';
 import { useDataStatistics } from './useDataStatistics';
@@ -8,7 +8,6 @@ import { useVehicleStatus } from './useVehicleStatus';
 
 export {
   openSerialPort, closeSerialPort,
-  type ReadLoopOptions, startReadLoop,
   WSCan,
   useDataReceive, useDataStatistics, useVehicleLogs, useVehicleStatus,
 };

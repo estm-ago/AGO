@@ -2,6 +2,7 @@
   "files": [],
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
   "compilerOptions": {
+    "types": ["wicg-file-system-access", "node"],
     "paths": {
       "@/*": ["./src/*"]
     }

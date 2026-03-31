@@ -1,4 +1,4 @@
-import { startReadLoop, type ReadLoopOptions } from "./useWSCan";
+import { WSCan } from "./useWSCan";
 import { ReadyState } from 'react-use-websocket';
 import { type CANPortConfig, type SetCANPortConfig } from '@/types';
 
@@ -15,7 +15,7 @@ export async function openSerialPort (
 
   let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
   if (options.readLoopOptions) {
-    reader = await startReadLoop(port, options.readLoopOptions);
+    reader = await WSCan.startReadLoop(port, options.readLoopOptions);
     console.log("readLoop started");
   }
 

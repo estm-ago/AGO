@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FC } from "react";
 import { WSCan, openSerialPort, closeSerialPort} from '@/hooks'
 import {
   CmdB0, CmdB1, type ReceivedData,
-  type SerialConsoleProps, type SetCANPortConfig, type WSCanFrame, type CANPortConfig,
+  type CANConsoleProps, type SetCANPortConfig, type WSCanFrame, type CANPortConfig,
 } from '@/types';
 import {  } from "@/types";
 
@@ -41,7 +41,7 @@ function bytesToHex(bytes: ArrayLike<number>): string
   return result.trimEnd();
 }
 
-const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig, dataReceive, dataStatistics }) =>
+const CANConsole: FC<CANConsoleProps> = ({ CANPortConfig, setCANPortConfig, dataReceive, dataStatistics }) =>
 {
   if (!("serial" in navigator)) {
     throw new Error("此瀏覽器不支援 Web Serial API");
@@ -57,7 +57,8 @@ const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig
     "10 10 01 90 00 00 00 00"
   );
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected)
+    {
       setStatus(`已連線 (${CANPortConfig.baudRate} bps)`);
     }
     console.log("serialPort changed:", CANPortConfig);
@@ -193,4 +194,4 @@ const SerialConsole: FC<SerialConsoleProps> = ({ CANPortConfig, setCANPortConfig
   );
 };
 
-export default SerialConsole;
+export default CANConsole;

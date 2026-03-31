@@ -47,7 +47,7 @@ interface WebAndSerialProps extends WebSocketHook
   setCANPortConfig: SetCANPortConfig;
 }
 
-interface SerialConsoleProps
+interface CANConsoleProps
 {
   CANPortConfig: CANPortConfig;
   setCANPortConfig: SetCANPortConfig;
@@ -61,5 +61,5 @@ export type {
   CANPortConfig,
   SetCANPortConfig,
   WebAndSerialProps,
-  SerialConsoleProps,
+  CANConsoleProps,
 };

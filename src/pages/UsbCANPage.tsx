@@ -1,7 +1,7 @@
 import { type FC } from 'react';
-import UsbCAN from '../components/SerialConsole';
+import CANConsole from '../components/SerialConsole';
 import { Cat } from 'lucide-react';
-import { type SerialConsoleProps } from '@/hooks';
+import { type CANConsoleProps } from '@/types';
 
 const UsbCANRouteConfig = {
   key: 'usbcan',
@@ -9,7 +9,7 @@ const UsbCANRouteConfig = {
   icon: Cat,
 };
 
-const UsbCANPage: FC<SerialConsoleProps> = (controller_ws) => {
+const UsbCANPage: FC<CANConsoleProps> = (controller_ws) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='container mx-auto py-8'>
@@ -18,7 +18,7 @@ const UsbCANPage: FC<SerialConsoleProps> = (controller_ws) => {
           <p className='text-gray-600'>...</p>
         </div>
 
-        <UsbCAN {...controller_ws} />
+        <CANConsole {...controller_ws} />
       </div>
     </div>
   );

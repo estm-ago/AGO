@@ -29,5 +29,6 @@ export type {
   MapCmdB2Type,
 };
 export type * from './interfaces';
-export type * from './WSCan';
+export * from './WSCan';
 export * from './define';
+export * from './vehicleDatas';

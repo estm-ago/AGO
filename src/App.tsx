@@ -5,12 +5,17 @@ import {
   ControlRouteConfig, DataRouteConfig, RoboticRouteConfig, UsbCANRouteConfig,
   HomePage, ControlPage, DataPage, RoboticPage, UsbCANPage
 } from './pages';
-import useWebSocket from 'react-use-websocket';
+import _useWebSocket, { ReadyState } from 'react-use-websocket';
 import { WEBSOCKET_CONFIG } from './config/websocket';
-import { useDataReceive, useDataStatistics, type CANPortConfig} from "@/hooks";
-import { ReadyState } from 'react-use-websocket';
+import { useDataReceive, useDataStatistics } from "@/hooks";
+import { type CANPortConfig } from "@/types";
 
 function App() {
+  const useWebSocket = (typeof _useWebSocket === 'function') 
+  ? _useWebSocket 
+  : (_useWebSocket as any).default;
+  console.log("Debug useWebSocket:", useWebSocket);
+
   const control_webSocketHook = useWebSocket(WEBSOCKET_CONFIG.url, WEBSOCKET_CONFIG.options);
   const data_webSocketHook = useWebSocket(WEBSOCKET_CONFIG.url, WEBSOCKET_CONFIG.options);
   const robot_webSocketHook = useWebSocket(WEBSOCKET_CONFIG.url, WEBSOCKET_CONFIG.options);
