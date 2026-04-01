@@ -2,7 +2,7 @@ use std::fs;
 use log::{error, info};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
-use crate::{mods::directory_mod::create_file, GlobalState, MAP_GEN_FILES_FOLDER, ROOT_GEN_FILES_FOLDER};
+use crate::{models::directory_mod::create_file, GlobalState, MAP_GEN_FILES_FOLDER, ROOT_GEN_FILES_FOLDER};
 
 /// 常數：用於 C 程式碼縮排  
 /// Constant: indentation for generated C code

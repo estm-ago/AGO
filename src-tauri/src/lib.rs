@@ -1,30 +1,14 @@
+pub mod models;
+
 use tauri::AppHandle;
 use std::{path::PathBuf, sync::Mutex as SyncMutex};
 use tokio::sync::{Mutex as AsyncMutex};
 use log::LevelFilter;
-use mods::{
-    directory_mod, log_mod, loop_cmd_mod, map_mod, matlab_mod::{self}, mcu_control_mod, mcu_store_mod, plotter_mod::{self}, tauri_test_mod, uart_mod::{self}, uart_packet_mod, wifi_mod::{self}, wifi_packet_mod
+use crate::models::{
+    directory_mod, log_mod, loop_cmd_mod, map_mod, matlab_mod::{self},
+    mcu_control_mod, mcu_store_mod, plotter_mod::{self}, tauri_test_mod,
+    serial_port, uart_packet_mod, wifi_mod::{self}, wifi_packet_mod
 };
-
-pub mod mods {
-    pub mod log_mod;
-    pub mod tauri_test_mod;
-    pub mod directory_mod;
-    pub mod loop_cmd_mod;
-    pub mod user_vec_mod;
-    pub mod uart_packet_mod;
-    pub mod uart_packet_proc_mod;
-    pub mod uart_mod;
-    pub mod wifi_mod;
-    pub mod wifi_packet_mod;
-    pub mod wifi_packet_proc_mod;
-    pub mod mcu_const;
-    pub mod mcu_control_mod;
-    pub mod mcu_store_mod;
-    pub mod plotter_mod;
-    pub mod map_mod;
-    pub mod matlab_mod;
-}
 
 /// Set const
 /// ```
@@ -38,7 +22,7 @@ pub const GENERATE_BASE_FOLDER_PATH: &str = "generate_base";
 
 pub struct GlobalState {
     pub root_path:                  SyncMutex <PathBuf>,
-    pub uart_manager:               AsyncMutex<uart_mod::UartAsyncManager>,
+    pub uart_manager:               AsyncMutex<serial_port::SerialPortManager>,
     pub uart_receive_buffer:        AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
     pub uart_transmit_buffer:       AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
     pub wifi_manager:               AsyncMutex<wifi_mod::WifiAsyncManager>,
@@ -56,7 +40,7 @@ pub fn run() {
     log_mod::init();
     let global_state = GlobalState {
         root_path:                  SyncMutex ::new(PathBuf::new()),
-        uart_manager:               AsyncMutex::new(uart_mod::UartAsyncManager::new()),
+        uart_manager:               AsyncMutex::new(serial_port::SerialPortManager::new()),
         uart_receive_buffer:        AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
         uart_transmit_buffer:       AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
         wifi_manager:               AsyncMutex::new(wifi_mod::WifiAsyncManager::new()),
@@ -74,10 +58,10 @@ pub fn run() {
         .manage(global_state)
         .invoke_handler(tauri::generate_handler![
             tauri_test_mod::mytest,
-            uart_mod::cmd_available_port_async,
-            uart_mod::cmd_check_port_open_async,
-            uart_mod::cmd_open_port_async,
-            uart_mod::cmd_close_port_async,
+            // serial_port::serial_port_available,
+            // serial_port::serial_port_check_open,
+            // serial_port::serial_port_open,
+            // serial_port::serial_port_close,
             mcu_control_mod::cmd_send_spd_stop,
             mcu_control_mod::cmd_send_spd_once,
             mcu_control_mod::cmd_send_spd_start,

@@ -4,7 +4,7 @@ use plotters::prelude::*;
 use rand::{self, Rng};
 use base64::{engine::general_purpose, Engine};
 use tauri::{AppHandle, Manager};
-use crate::{mods::directory_mod, GlobalState, ROOT_GEN_FILES_FOLDER};
+use crate::{models::directory_mod, GlobalState, ROOT_GEN_FILES_FOLDER};
 
 fn store_folder() -> String {
     format!("{}/chart", ROOT_GEN_FILES_FOLDER)

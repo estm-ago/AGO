@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FC } from "react";
 import { WSCan, openSerialPort, closeSerialPort} from '@/hooks'
 import {
-  CmdB0, CmdB1, type ReceivedData,
-  type CANConsoleProps, type SetCANPortConfig, type WSCanFrame, type CANPortConfig,
+  type ReceivedData,
+  type CANConsoleProps, type WSCanFrame, type CANPortConfig,
 } from '@/types';
 import {  } from "@/types";
 
@@ -52,9 +52,9 @@ const CANConsole: FC<CANConsoleProps> = ({ CANPortConfig, setCANPortConfig, data
   const isConnected =
     !!serialPort && serialPort.readable !== null && serialPort.writable !== null;
   const [status, setStatus] = useState<string>("尚未連線");
-  const [input_adr, setInputAdr] = useState<string>("123");
+  const [input_adr, setInputAdr] = useState<string>("140");
   const [input_msg, setInputMsg] = useState<string>(
-    "10 10 01 90 00 00 00 00"
+    "02 00 41 F0 00 00" // 02 00 42 8C 00 00
   );
   useEffect(() => {
     if (isConnected)

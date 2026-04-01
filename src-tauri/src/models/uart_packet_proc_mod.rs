@@ -2,10 +2,13 @@ use std::{error::Error, fs};
 use log::error;
 use regex::Regex;
 use tauri::{AppHandle, Manager};
-use crate::{mods::{directory_mod, mcu_const, mcu_store_mod::{DataType, MotorDataType}}, GlobalState, BASE_GEN_FILES_FOLDER, ROOT_GEN_FILES_FOLDER};
+use crate::{
+    models::{directory_mod, mcu_const, mcu_store_mod::{DataType, MotorDataType}},
+    GlobalState, BASE_GEN_FILES_FOLDER, ROOT_GEN_FILES_FOLDER
+};
 
 const CONST_RS_PATH: &str = include_str!(
-    concat!(env!("CARGO_MANIFEST_DIR"), "/src/mods/mcu_const.rs")
+    concat!(env!("CARGO_MANIFEST_DIR"), "/src/models/mcu_const.rs")
 );
 
 /// 生成 MCU 常量的 C 標頭檔案<br>

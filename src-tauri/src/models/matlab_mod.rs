@@ -2,7 +2,7 @@ use libloading::{Library, Symbol};
 use libc::{c_char, c_double, c_int};
 use log::{debug, error, info};
 use std::{error::Error, ffi::{c_void, CStr, CString}, path::Path, ptr};
-use crate::{mods::directory_mod::{create_file, path_to_string}};
+use crate::{models::directory_mod::{create_file, path_to_string}};
 
 pub const MATLAB_LIBENG_DLL_PATH: &str = "C:/Program Files/MATLAB/R2024b/bin/win64/libeng.dll";
 const MATLAB_LIBMX_DLL_PATH: &str = "C:/Program Files/MATLAB/R2024b/bin/win64/libmx.dll";

@@ -1,6 +1,6 @@
 use log::error;
 use tauri::{AppHandle, Manager};
-use crate::{mods::{uart_packet_mod::UartPacket, mcu_const}, GlobalState};
+use crate::{models::{uart_packet_mod::UartPacket, mcu_const}, GlobalState};
 
 #[tauri::command]
 pub async fn cmd_send_spd_stop(app: AppHandle) -> Result<(), String> {

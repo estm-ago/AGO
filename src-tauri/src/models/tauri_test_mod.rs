@@ -1,6 +1,6 @@
 use log::info;
 use tauri::{AppHandle, Manager};
-use crate::{mods::{wifi_mod, mcu_store_mod}, GlobalState};
+use crate::{models::{wifi_mod, mcu_store_mod}, GlobalState};
 
 #[tauri::command]
 pub async fn mytest(app: AppHandle) -> Result<(), String> {

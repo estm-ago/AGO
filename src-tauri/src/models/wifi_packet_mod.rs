@@ -2,7 +2,7 @@ use std::{error::Error, mem, net::IpAddr};
 
 use log::{debug, info};
 
-use crate::mods::user_vec_mod::UserVecU8;
+use crate::models::user_vec_mod::UserVecU8;
 
 pub const WIFI_TCP_PACKET_MAX_SIZE: usize = 1024;
 pub const WIFI_UDP_PACKET_MAX_SIZE: usize = 1024;

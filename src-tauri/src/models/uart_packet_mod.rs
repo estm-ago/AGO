@@ -1,7 +1,7 @@
 use std::{error::Error, mem};
 use log::{debug, info};
 
-use crate::mods::user_vec_mod::UserVecU8;
+use crate::models::user_vec_mod::UserVecU8;
 
 /// 定義 UART 封包的起始、結尾符號及資料長度常數<br>
 /// Define constants for UART packet start code, end code, and data length

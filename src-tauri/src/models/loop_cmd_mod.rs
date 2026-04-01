@@ -1,7 +1,7 @@
 use std::time::Duration;
 use tauri::AppHandle;
 use tokio::time::interval;
-use crate::mods::uart_packet_proc_mod;
+use crate::models::uart_packet_proc_mod;
 
 pub fn setup(app: AppHandle) {
     let app_10ms = app.clone();

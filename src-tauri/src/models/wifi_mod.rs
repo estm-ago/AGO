@@ -1,8 +1,13 @@
 use std::{error::Error, net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket as StdUdpSocket}, sync::Arc, time::Duration};
 use log::{debug, error, info};
-use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::{TcpListener, TcpStream, UdpSocket}, sync::{watch::{channel, Receiver, Sender}, Mutex}, time::sleep};
+use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
+    net::{TcpListener, TcpStream, UdpSocket},
+    sync::{watch::{channel, Receiver, Sender}, Mutex},
+    time::sleep
+};
 use tauri::{AppHandle, Manager};
-use crate::{GlobalState, mods::wifi_packet_mod::{self, WifiPacket}};
+use crate::{GlobalState, models::wifi_packet_mod::{self, WifiPacket}};
 
 const TARGET_IP: IpAddr   = IpAddr::V4(Ipv4Addr::new(192, 168, 0, 20));
 const TCP_PORT: u16 = 60000;
