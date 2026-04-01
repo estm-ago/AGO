@@ -16,10 +16,10 @@ export const Navbar: FC<NavbarProps> = (props) => {
   const location = useLocation();
 
   const stateMap: Record<string, any> = {
+    serial: props.serialReadyState,
     control: props.controlReadyState,
     data: props.dataReadyState,
     robot: props.robotReadyState,
-    serial: props.serialReadyState,
   };
 
   const getConnectionBadge = (readyState?: ReadyState) => {

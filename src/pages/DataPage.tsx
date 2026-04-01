@@ -15,7 +15,7 @@ interface DataPageProps extends WebSocketHook {
   dataStatistics: DataStatisticsStore;
 }
 
-const DataPage: FC<DataPageProps> = (data_ws) => {
+const DataPage: FC<DataPageProps> = (props) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='container mx-auto py-8'>
@@ -24,7 +24,7 @@ const DataPage: FC<DataPageProps> = (data_ws) => {
           <p className='text-gray-600'>即時監控從ESP32車輛接收的馬達數據和系統狀態</p>
         </div>
 
-        <DataP {...data_ws} />
+        <DataP {...props} />
       </div>
     </div>
   );

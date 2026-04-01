@@ -1,5 +1,5 @@
 import Robotic from '@/components/Robotic';
-import type { WebAndSerialProps } from '@/hooks';
+import type { WebAndSerialProps } from '@/types';
 import type { FC } from 'react';
 import { Bot } from 'lucide-react';
 
@@ -9,7 +9,7 @@ const RoboticRouteConfig = {
   icon: Bot,
 };
 
-const RoboticPage: FC<WebAndSerialProps> = (robot_ws) => {
+const RoboticPage: FC<WebAndSerialProps> = (props) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='container mx-auto py-8'>
@@ -18,7 +18,7 @@ const RoboticPage: FC<WebAndSerialProps> = (robot_ws) => {
           <p className='text-gray-600'>使用下方控制面板來操控機器手臂的方向和速度</p>
         </div>
 
-        <Robotic {...robot_ws} />
+        <Robotic {...props} />
       </div>
     </div>
   );

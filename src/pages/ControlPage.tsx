@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 import Controller from '../components/Controller';
-import type { WebAndSerialProps } from '@/hooks';
+import type { WebAndSerialProps } from '@/types';
 import { Car } from 'lucide-react';
 
 const ControlRouteConfig = {
@@ -9,7 +9,7 @@ const ControlRouteConfig = {
   icon: Car,
 };
 
-const ControlPage: FC<WebAndSerialProps> = (controller_ws) => {
+const ControlPage: FC<WebAndSerialProps> = (props) => {
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='container mx-auto py-8'>
@@ -18,7 +18,7 @@ const ControlPage: FC<WebAndSerialProps> = (controller_ws) => {
           <p className='text-gray-600'>使用下方控制面板來操控ESP32車輛的移動方向和速度</p>
         </div>
 
-        <Controller {...controller_ws} />
+        <Controller {...props} />
       </div>
     </div>
   );

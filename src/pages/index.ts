@@ -1,18 +1,21 @@
-import { HomePage, } from './HomePage';
-import { ControlPage, ControlRouteConfig } from './ControlPage';
-import { RoboticPage, RoboticRouteConfig } from './RoboticPage';
-import { DataPage, DataRouteConfig } from './DataPage';
-import { UsbCANPage, UsbCANRouteConfig } from './UsbCANPage';
+import { ControlRouteConfig } from './ControlPage';
+import { RoboticRouteConfig } from './RoboticPage';
+import { DataRouteConfig } from './DataPage';
+import { UsbCANRouteConfig } from './SerialPort';
+import { WifiRouteConfig } from './Wifi';
 
 const navRoutes = [
+  UsbCANRouteConfig,
+  WifiRouteConfig,
   ControlRouteConfig,
   DataRouteConfig,
   RoboticRouteConfig,
-  UsbCANRouteConfig,
 ];
 
-export {
-  navRoutes, HomePage,
-  ControlRouteConfig, DataRouteConfig, RoboticRouteConfig, UsbCANRouteConfig,
-  ControlPage, DataPage, RoboticPage, UsbCANPage
-};
+export * from './HomePage';
+export * from './ControlPage';
+export * from './DataPage';
+export * from './RoboticPage';
+export * from './SerialPort';
+export * from './Wifi';
+export { navRoutes };

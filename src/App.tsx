@@ -46,6 +46,17 @@ function App() {
         >
           <Route index element={<HomePage />} />
           <Route
+            path={UsbCANRouteConfig.key}
+            element={
+              <UsbCANPage
+                CANPortConfig={CANPortConfig}
+                setCANPortConfig={setCANPortConfig}
+                dataReceive={dataReceive}
+                dataStatistics={dataStatistics}
+              />
+            }
+          />
+          <Route
             path={ControlRouteConfig.key}
             element={
               <ControlPage
@@ -72,17 +83,6 @@ function App() {
                 {...robot_webSocketHook}
                 CANPortConfig={CANPortConfig}
                 setCANPortConfig={setCANPortConfig}
-              />
-            }
-          />
-          <Route
-            path={UsbCANRouteConfig.key}
-            element={
-              <UsbCANPage
-                CANPortConfig={CANPortConfig}
-                setCANPortConfig={setCANPortConfig}
-                dataReceive={dataReceive}
-                dataStatistics={dataStatistics}
               />
             }
           />
