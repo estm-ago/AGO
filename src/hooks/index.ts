@@ -1,5 +1,5 @@
 
-import { WSCan } from './useWSCan';
+import { WSCan } from './useWebWSCan';
 import { closeSerialPort, openSerialPort } from './serialPortHelpers';
 import { useDataReceive } from './useDataReceive';
 import { useDataStatistics } from './useDataStatistics';

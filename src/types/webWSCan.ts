@@ -23,43 +23,43 @@ interface WSCanFrame {
   error?: boolean;
 }
 
-interface ReadLoopOptions {
+interface WebWSCanReadLoopOptions {
   frameSize: number; // 像你現在的 FRAME_SIZE = 20
   onFrame: (frame: WSCanFrame) => void;        // 收到一整包 frame 時要做什麼
   onError?: (err: unknown) => void;            // 讀取失敗
   onDone?: () => void;                         // reader 結束
 }
 
-interface CANPortConfig {
+interface WebCANPortConfig {
   readyState: ReadyState,
   port: SerialPort | null,
   baudRate: number;
   log: string;
-  readLoopOptions: ReadLoopOptions | null;
+  readLoopOptions: WebWSCanReadLoopOptions | null;
   reader: ReadableStreamDefaultReader | null;
 }
 
-type SetCANPortConfig = Dispatch<SetStateAction<CANPortConfig>>;
+type SetWebCANPortConfig = Dispatch<SetStateAction<WebCANPortConfig>>;
 
 interface WebAndSerialProps extends WebSocketHook
 {
-  CANPortConfig: CANPortConfig;
-  setCANPortConfig: SetCANPortConfig;
+  CANPortConfig: WebCANPortConfig;
+  setCANPortConfig: SetWebCANPortConfig;
 }
 
-interface CANConsoleProps
+interface WebCANConsoleProps
 {
-  CANPortConfig: CANPortConfig;
-  setCANPortConfig: SetCANPortConfig;
+  CANPortConfig: WebCANPortConfig;
+  setCANPortConfig: SetWebCANPortConfig;
   dataReceive: DataReceiveStore;
   dataStatistics: DataStatisticsStore;
 }
 
 export type {
   WSCanFrame,
-  ReadLoopOptions,
-  CANPortConfig,
-  SetCANPortConfig,
+  WebWSCanReadLoopOptions,
+  WebCANPortConfig,
+  SetWebCANPortConfig,
   WebAndSerialProps,
-  CANConsoleProps,
+  WebCANConsoleProps,
 };

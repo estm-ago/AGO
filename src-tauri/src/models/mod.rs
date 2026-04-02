@@ -20,3 +20,6 @@ pub mod serial_port;
 
 #[path = "WSCan/main.rs"]
 pub mod wscan;
+
+#[path = "data/main.rs"]
+pub mod data;

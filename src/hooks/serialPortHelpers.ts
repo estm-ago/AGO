@@ -1,10 +1,10 @@
-import { WSCan } from "./useWSCan";
+import { WSCan } from "./useWebWSCan";
 import { ReadyState } from 'react-use-websocket';
-import { type CANPortConfig, type SetCANPortConfig } from '@/types';
+import { type WebCANPortConfig, type SetWebCANPortConfig } from '@/types';
 
 export async function openSerialPort (
-  options: CANPortConfig,
-  setCANPortConfig: SetCANPortConfig,
+  options: WebCANPortConfig,
+  setCANPortConfig: SetWebCANPortConfig,
 ): Promise<SerialPort> {
   if (!("serial" in navigator)) {
     throw new Error("此瀏覽器不支援 Web Serial API");
@@ -30,8 +30,8 @@ export async function openSerialPort (
 }
 
 export async function closeSerialPort (
-  options: CANPortConfig,
-  setCANPortConfig: SetCANPortConfig,
+  options: WebCANPortConfig,
+  setCANPortConfig: SetWebCANPortConfig,
 ): Promise<void> {
   try {
     if (options.reader) {

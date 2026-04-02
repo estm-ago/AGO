@@ -1,5 +1,5 @@
 import {
-  type WSCanFrame, type CANPortConfig, type SetCANPortConfig, type ReadLoopOptions,
+  type WSCanFrame, type WebCANPortConfig, type SetWebCANPortConfig, type WebWSCanReadLoopOptions,
   WSCan_Baudrate
 } from "@/types";
 
@@ -107,8 +107,8 @@ export const WSCan = {
 
   async sendWSCanFrame (
     frame: WSCanFrame,
-    options: CANPortConfig,
-    setCANPortConfig: SetCANPortConfig,
+    options: WebCANPortConfig,
+    setCANPortConfig: SetWebCANPortConfig,
   ) {
     const serialPort = options.port;
     if (!serialPort || !serialPort.writable) return;
@@ -124,7 +124,7 @@ export const WSCan = {
 
   async startReadLoop (
     port: SerialPort,
-    options: ReadLoopOptions,
+    options: WebWSCanReadLoopOptions,
   ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
     const { frameSize, onFrame, onError, onDone } = options;
 

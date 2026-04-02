@@ -7,7 +7,7 @@ import { VehicleStatusPanel } from './VehicleStatusPanel';
 import { SystemLogs } from './SystemLogs';
 import { concatUint8Arrays, u8ArrayToBool } from '@/utils';
 import {
-  type SetCANPortConfig, type WSCanFrame, type CANPortConfig,
+  type SetWebCANPortConfig, type WSCanFrame, type WebCANPortConfig,
   type WebAndSerialProps,
   type CarCommandOpts,
   type ControllerType,
@@ -23,8 +23,8 @@ import Rfid from './Rfid';
 export async function sendCMD(
   webSktState: ReadyState,
   sendMessage: (data: ArrayBufferLike | string) => void,
-  CANPortConfig: CANPortConfig,
-  setCANPortConfig: SetCANPortConfig,
+  CANPortConfig: WebCANPortConfig,
+  setCANPortConfig: SetWebCANPortConfig,
   buffers: Uint8Array[]
 ): Promise<void> {
   if (buffers.length === 0) return;

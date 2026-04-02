@@ -7,7 +7,8 @@ use log::LevelFilter;
 use crate::models::{
     directory_mod, log_mod, loop_cmd_mod, map_mod, matlab_mod::{self},
     mcu_control_mod, mcu_store_mod, plotter_mod::{self}, tauri_test_mod,
-    serial_port, uart_packet_mod, wifi_mod::{self}, wifi_packet_mod
+    uart_packet_mod, wifi_mod::{self}, wifi_packet_mod, wscan,
+    data,
 };
 
 /// Set const
@@ -22,7 +23,9 @@ pub const GENERATE_BASE_FOLDER_PATH: &str = "generate_base";
 
 pub struct GlobalState {
     pub root_path:                  SyncMutex <PathBuf>,
-    pub uart_manager:               AsyncMutex<serial_port::SerialPortManager>,
+    pub wscan_manager:              AsyncMutex<wscan::WSCanManager>,
+    pub vehicle_data:               AsyncMutex<data::VehicleData>,
+
     pub uart_receive_buffer:        AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
     pub uart_transmit_buffer:       AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
     pub wifi_manager:               AsyncMutex<wifi_mod::WifiAsyncManager>,
@@ -40,7 +43,9 @@ pub fn run() {
     log_mod::init();
     let global_state = GlobalState {
         root_path:                  SyncMutex ::new(PathBuf::new()),
-        uart_manager:               AsyncMutex::new(serial_port::SerialPortManager::new()),
+        wscan_manager:              AsyncMutex::new(wscan::WSCanManager::new(20, 20)),
+        vehicle_data:               AsyncMutex::new(data::VehicleData::new(6000)),
+
         uart_receive_buffer:        AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
         uart_transmit_buffer:       AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
         wifi_manager:               AsyncMutex::new(wifi_mod::WifiAsyncManager::new()),
@@ -58,10 +63,10 @@ pub fn run() {
         .manage(global_state)
         .invoke_handler(tauri::generate_handler![
             tauri_test_mod::mytest,
-            // serial_port::serial_port_available,
-            // serial_port::serial_port_check_open,
-            // serial_port::serial_port_open,
-            // serial_port::serial_port_close,
+            wscan::wscan_available,
+            wscan::wscan_check_open,
+            wscan::wscan_open,
+            wscan::wscan_close,
             mcu_control_mod::cmd_send_spd_stop,
             mcu_control_mod::cmd_send_spd_once,
             mcu_control_mod::cmd_send_spd_start,

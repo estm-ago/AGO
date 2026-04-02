@@ -8,7 +8,7 @@ import {
 import _useWebSocket, { ReadyState } from 'react-use-websocket';
 import { WEBSOCKET_CONFIG } from './config/websocket';
 import { useDataReceive, useDataStatistics } from "@/hooks";
-import { type CANPortConfig } from "@/types";
+import { type WebCANPortConfig } from "@/types";
 
 function App() {
   const useWebSocket = (typeof _useWebSocket === 'function') 
@@ -19,7 +19,7 @@ function App() {
   const control_webSocketHook = useWebSocket(WEBSOCKET_CONFIG.url, WEBSOCKET_CONFIG.options);
   const data_webSocketHook = useWebSocket(WEBSOCKET_CONFIG.url, WEBSOCKET_CONFIG.options);
   const robot_webSocketHook = useWebSocket(WEBSOCKET_CONFIG.url, WEBSOCKET_CONFIG.options);
-  const [CANPortConfig, setCANPortConfig] = useState<CANPortConfig>({
+  const [CANPortConfig, setCANPortConfig] = useState<WebCANPortConfig>({
     readyState: ReadyState.CLOSED,
     port: null,
     baudRate: 2_000_000,
