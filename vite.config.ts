@@ -11,4 +11,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    watch: {
+      // 告訴 Vite 忽略 data_gen 資料夾下的所有檔案變動
+      ignored: ["**/src-tauri/data_gen/**"], 
+    },
+  },
 });

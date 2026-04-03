@@ -37,7 +37,6 @@ impl WSCanManager {
         self.port.check_open()
     }
 
-
     fn parse_u16_be(data: &[u8]) -> Option<u16>
     {
         let bytes: [u8; 2] = data.try_into().ok()?;
@@ -54,6 +53,25 @@ impl WSCanManager {
             val = -val;
         }
         Some(val)
+    }
+    
+    /// 將以空白分隔的十六進位字串轉換為 Vec<u8>
+    fn hex_string_to_bytes(s: &str) -> Result<Vec<u8>, String>
+    {
+        s.split_whitespace()
+            .map(|p| {
+                // from_str_radix(字串, 16) 會嘗試將其解析為 16 進位的 u8
+                u8::from_str_radix(p, 16).map_err(|_| format!("非法 hex byte: \"{}\"", p))
+            })
+            .collect() // collect 會自動處理 Result，如果其中一個 map 失敗，整個就會回傳 Err
+    }
+
+    /// 將單一十六進位字串轉換為 u16
+    fn hex_to_uint16(hex_str: &str) -> Result<u16, String>
+    {
+        let trimmed = hex_str.trim();
+        u16::from_str_radix(trimmed, 16)
+            .map_err(|_| format!("非法的 16 位元十六進位數值: \"{}\"", trimmed))
     }
 
     pub fn open(
@@ -257,6 +275,30 @@ impl WSCanManager {
         }
         self.port.close()
     }
+
+    pub fn send(&mut self, id: String, data: String) -> Result<(), String>
+    {
+        let _id = Self::hex_to_uint16(&id).map_err(|e| e.to_string())?;
+        let mut _data = Self::hex_string_to_bytes(&data).map_err(|e| e.to_string())?;
+        _data.truncate(8);
+        let frame = WSCanFrame {
+            id: _id,
+            dlc: _data.len() as u8,
+            data: _data,
+            extended: false,
+            rtr: false,
+            error: false
+        };
+        if let Ok(mut buf) = self.tx_buffer.lock()
+        {
+            buf.push_back(frame);
+            Ok(())
+        }
+        else
+        {
+            Err("Failed to lock tx_buffer".into())
+        }
+    }
 }
 
 /// Tauri 指令：列出可用序列埠<br>
@@ -310,8 +352,8 @@ pub async fn wscan_open(app: AppHandle, port_name: String) -> Result<String, Str
 pub async fn wscan_close(app: AppHandle) -> Result<String, String>
 {
     let global_state = app.state::<GlobalState>();
-    let mut port = global_state.wscan_manager.lock().await;
-    port.close().map_err(|e| {
+    let mut state = global_state.wscan_manager.lock().await;
+    state.close().map_err(|e| {
         error!("{}", e);
         e.clone()
     })?;
@@ -356,4 +398,17 @@ pub async fn wscan_export(app: AppHandle) -> Result<String, String>
             Err(err_msg)
         }
     }
+}
+
+#[tauri::command]
+pub async fn wscan_send(app: AppHandle, id: String, data: String) -> Result<String, String>
+{
+    let global_state = app.state::<GlobalState>();
+    let mut state = global_state.wscan_manager.lock().await;
+
+    state.send(id, data).map_err(|e| {
+        error!("{}", e);
+        e.clone()
+    })?;
+    Ok("Frame sent successfully".into())
 }

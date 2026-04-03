@@ -68,6 +68,7 @@ pub fn run() {
             wscan::wscan_open,
             wscan::wscan_close,
             wscan::wscan_export,
+            wscan::wscan_send,
             mcu_control_mod::cmd_send_spd_stop,
             mcu_control_mod::cmd_send_spd_once,
             mcu_control_mod::cmd_send_spd_start,
