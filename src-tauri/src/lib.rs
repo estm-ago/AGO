@@ -5,11 +5,14 @@ use std::{path::PathBuf, sync::Mutex as SyncMutex};
 use tokio::sync::{Mutex as AsyncMutex};
 use log::LevelFilter;
 use crate::models::{
-    directory_mod, log_mod, loop_cmd_mod, map_mod, matlab_mod::{self},
-    mcu_control_mod, mcu_store_mod, plotter_mod::{self}, tauri_test_mod,
-    uart_packet_mod, wifi_mod::{self}, wifi_packet_mod, wscan,
-    data,
+    directory_mod, log_mod, matlab_mod::{self},
+    wscan, data,
 };
+// use crate::models::{
+//     loop_cmd_mod, map_mod, 
+//     mcu_control_mod, mcu_store_mod, plotter_mod::{self}, tauri_test_mod,
+//     uart_packet_mod, wifi_mod::{self}, wifi_packet_mod,
+// };
 
 /// Set const
 /// ```
@@ -25,17 +28,17 @@ pub struct GlobalState {
     pub root_path:                  SyncMutex <PathBuf>,
     pub wscan_manager:              AsyncMutex<wscan::WSCanManager>,
     pub vehicle_data:               AsyncMutex<data::vehicle::VehicleDatas>,
-
-    pub uart_receive_buffer:        AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
-    pub uart_transmit_buffer:       AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
-    pub wifi_manager:               AsyncMutex<wifi_mod::WifiAsyncManager>,
-    pub wifi_tcp_receive_buffer:    AsyncMutex<wifi_packet_mod::WifiTrceBuffer>,
-    pub wifi_tcp_transmit_buffer:   AsyncMutex<wifi_packet_mod::WifiTrceBuffer>,
-    pub wifi_udp_receive_buffer:    AsyncMutex<wifi_packet_mod::WifiTrceBuffer>,
-    pub wifi_udp_transmit_buffer:   AsyncMutex<wifi_packet_mod::WifiTrceBuffer>,
-    pub store_datas:                AsyncMutex<mcu_store_mod::DataStore>,
     pub matlab_engine:              SyncMutex <matlab_mod::MatlabEngine>,
-    pub rand_datas:                 AsyncMutex<plotter_mod::ChartRandDatas>,
+
+    // pub uart_receive_buffer:        AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
+    // pub uart_transmit_buffer:       AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
+    // pub wifi_manager:               AsyncMutex<wifi_mod::WifiAsyncManager>,
+    // pub wifi_tcp_receive_buffer:    AsyncMutex<wifi_packet_mod::WifiTrceBuffer>,
+    // pub wifi_tcp_transmit_buffer:   AsyncMutex<wifi_packet_mod::WifiTrceBuffer>,
+    // pub wifi_udp_receive_buffer:    AsyncMutex<wifi_packet_mod::WifiTrceBuffer>,
+    // pub wifi_udp_transmit_buffer:   AsyncMutex<wifi_packet_mod::WifiTrceBuffer>,
+    // pub store_datas:                AsyncMutex<mcu_store_mod::DataStore>,
+    // pub rand_datas:                 AsyncMutex<plotter_mod::ChartRandDatas>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -45,38 +48,38 @@ pub fn run() {
         root_path:                  SyncMutex ::new(PathBuf::new()),
         wscan_manager:              AsyncMutex::new(wscan::WSCanManager::new(20, 20)),
         vehicle_data:               AsyncMutex::new(data::vehicle::VehicleDatas::new(6000)),
-
-        uart_receive_buffer:        AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
-        uart_transmit_buffer:       AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
-        wifi_manager:               AsyncMutex::new(wifi_mod::WifiAsyncManager::new()),
-        wifi_tcp_receive_buffer:    AsyncMutex::new(wifi_packet_mod::WifiTrceBuffer::new(10, wifi_packet_mod::WIFI_TCP_PACKET_MAX_SIZE)),
-        wifi_tcp_transmit_buffer:   AsyncMutex::new(wifi_packet_mod::WifiTrceBuffer::new(10, wifi_packet_mod::WIFI_TCP_PACKET_MAX_SIZE)),
-        wifi_udp_receive_buffer:    AsyncMutex::new(wifi_packet_mod::WifiTrceBuffer::new(10, wifi_packet_mod::WIFI_UDP_PACKET_MAX_SIZE)),
-        wifi_udp_transmit_buffer:   AsyncMutex::new(wifi_packet_mod::WifiTrceBuffer::new(10, wifi_packet_mod::WIFI_UDP_PACKET_MAX_SIZE)),
-        store_datas:                AsyncMutex::new(mcu_store_mod::DataStore::new(100)),
         matlab_engine:              SyncMutex ::new(matlab_mod::MatlabEngine::new()),
-        rand_datas:                 AsyncMutex::new(plotter_mod::ChartRandDatas::new_rand("temp", "disp", 100)),
+
+        // uart_receive_buffer:        AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
+        // uart_transmit_buffer:       AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
+        // wifi_manager:               AsyncMutex::new(wifi_mod::WifiAsyncManager::new()),
+        // wifi_tcp_receive_buffer:    AsyncMutex::new(wifi_packet_mod::WifiTrceBuffer::new(10, wifi_packet_mod::WIFI_TCP_PACKET_MAX_SIZE)),
+        // wifi_tcp_transmit_buffer:   AsyncMutex::new(wifi_packet_mod::WifiTrceBuffer::new(10, wifi_packet_mod::WIFI_TCP_PACKET_MAX_SIZE)),
+        // wifi_udp_receive_buffer:    AsyncMutex::new(wifi_packet_mod::WifiTrceBuffer::new(10, wifi_packet_mod::WIFI_UDP_PACKET_MAX_SIZE)),
+        // wifi_udp_transmit_buffer:   AsyncMutex::new(wifi_packet_mod::WifiTrceBuffer::new(10, wifi_packet_mod::WIFI_UDP_PACKET_MAX_SIZE)),
+        // store_datas:                AsyncMutex::new(mcu_store_mod::DataStore::new(100)),
+        // rand_datas:                 AsyncMutex::new(plotter_mod::ChartRandDatas::new_rand("temp", "disp", 100)),
     };
     
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(global_state)
         .invoke_handler(tauri::generate_handler![
-            tauri_test_mod::mytest,
             wscan::wscan_available,
             wscan::wscan_check_open,
             wscan::wscan_open,
             wscan::wscan_close,
             wscan::wscan_export,
             wscan::wscan_send,
-            mcu_control_mod::cmd_send_spd_stop,
-            mcu_control_mod::cmd_send_spd_once,
-            mcu_control_mod::cmd_send_spd_start,
-            wifi_mod::cmd_wifi_start,
-            wifi_mod::cmd_wifi_transmie,
-            map_mod::map_load,
-            map_mod::map_save,
-            plotter_mod::chart_generate,
+            // tauri_test_mod::mytest,
+            // mcu_control_mod::cmd_send_spd_stop,
+            // mcu_control_mod::cmd_send_spd_once,
+            // mcu_control_mod::cmd_send_spd_start,
+            // wifi_mod::cmd_wifi_start,
+            // wifi_mod::cmd_wifi_transmie,
+            // map_mod::map_load,
+            // map_mod::map_save,
+            // plotter_mod::chart_generate,
         ])
         .setup(|app| {
             setup(app.handle().clone());
@@ -87,5 +90,5 @@ pub fn run() {
 }
 fn setup(app: AppHandle) {
     directory_mod::setup(app.clone());
-    loop_cmd_mod::setup(app);
+    // loop_cmd_mod::setup(app);
 }
