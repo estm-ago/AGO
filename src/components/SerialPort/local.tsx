@@ -78,10 +78,16 @@ const UartPortOCComp = () => {
         setIsOpen(false);
     };
 
+    const exportCSV = async () => {
+        const result = await invoke("wscan_export");
+        const message = `${result}`;
+        setResponse(message);
+    };
+
     // 元件呈現
     // component render
     return (
-        <div className="flex flex-col items-center space-y-4 py-4 text-xl">
+        <div className="flex flex-col space-y-4 py-4 text-xl">
             <h2>Local USB-CAN 串口測試</h2>
             {/* 下拉選單：選擇埠 / dropdown for selecting port */}
             <select
@@ -107,6 +113,10 @@ const UartPortOCComp = () => {
                     onClick={openPort}
                 > Open </button>
             )}
+            <button
+                    className="border-2 border-green-500 text-green-500 rounded px-1 hover:bg-green-50 transition-colors"
+                    onClick={exportCSV}
+                > CSV </button>
             {/* 顯示指令回應訊息 / display command response */}
             <div>
                 <pre className="text-2xl min-h-[4em]">

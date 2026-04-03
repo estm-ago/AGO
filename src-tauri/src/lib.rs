@@ -15,7 +15,7 @@ use crate::models::{
 /// ```
 /// LevelFilter::{Trace, Debug, Info, Warn, Error, Off}
 /// ```
-pub const DEFAULT_LOG_LEVEL: LevelFilter = LevelFilter::Info;
+pub const DEFAULT_LOG_LEVEL: LevelFilter = LevelFilter::Trace;
 pub const ROOT_GEN_FILES_FOLDER: &str = "generate";
 pub const BASE_GEN_FILES_FOLDER: &str = "base";
 pub const MAP_GEN_FILES_FOLDER: &str = "map";
@@ -24,7 +24,7 @@ pub const GENERATE_BASE_FOLDER_PATH: &str = "generate_base";
 pub struct GlobalState {
     pub root_path:                  SyncMutex <PathBuf>,
     pub wscan_manager:              AsyncMutex<wscan::WSCanManager>,
-    pub vehicle_data:               AsyncMutex<data::VehicleData>,
+    pub vehicle_data:               AsyncMutex<data::vehicle::VehicleDatas>,
 
     pub uart_receive_buffer:        AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
     pub uart_transmit_buffer:       AsyncMutex<uart_packet_mod::UartTransceiveBuffer>,
@@ -44,7 +44,7 @@ pub fn run() {
     let global_state = GlobalState {
         root_path:                  SyncMutex ::new(PathBuf::new()),
         wscan_manager:              AsyncMutex::new(wscan::WSCanManager::new(20, 20)),
-        vehicle_data:               AsyncMutex::new(data::VehicleData::new(6000)),
+        vehicle_data:               AsyncMutex::new(data::vehicle::VehicleDatas::new(6000)),
 
         uart_receive_buffer:        AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
         uart_transmit_buffer:       AsyncMutex::new(uart_packet_mod::UartTransceiveBuffer::new(10)),
@@ -67,6 +67,7 @@ pub fn run() {
             wscan::wscan_check_open,
             wscan::wscan_open,
             wscan::wscan_close,
+            wscan::wscan_export,
             mcu_control_mod::cmd_send_spd_stop,
             mcu_control_mod::cmd_send_spd_once,
             mcu_control_mod::cmd_send_spd_start,

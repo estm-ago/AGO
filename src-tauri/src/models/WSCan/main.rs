@@ -4,10 +4,13 @@ pub use frame::WSCanFrame;
 use std::{
     collections::VecDeque, io::ErrorKind, sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}, thread, time::Duration
 };
-use log::{debug, error, info, trace};
+use log::{error, info, trace};
 use tauri::{AppHandle, Manager};
 use crate::{
-    models::{serial_port::SerialPortManager, data::VehicleData, data::MotorData},
+    models::{
+        serial_port::SerialPortManager,
+        data::vehicle::{MotorSide, RpmType},
+    },
     GlobalState
 };
 
@@ -34,6 +37,25 @@ impl WSCanManager {
         self.port.check_open()
     }
 
+
+    fn parse_u16_be(data: &[u8]) -> Option<u16>
+    {
+        let bytes: [u8; 2] = data.try_into().ok()?;
+        Some(u16::from_be_bytes(bytes))
+    }
+
+    /// 將 4 個 u8 轉換為 f32 (Big Endian)，並根據 sign_flag 決定正負號
+    /// sign_flag: 1 代表負數，其餘代表正數
+    fn parse_f32_with_sign_be(sign_flag: u8, data: &[u8]) -> Option<f32>
+    {
+        let bytes: [u8; 4] = data.try_into().ok()?;
+        let mut val = f32::from_be_bytes(bytes);
+        if sign_flag == 1 {
+            val = -val;
+        }
+        Some(val)
+    }
+
     pub fn open(
         &mut self,
         app: AppHandle,
@@ -47,7 +69,6 @@ impl WSCanManager {
 
         let shutdown_flag = Arc::new(AtomicBool::new(false));
         self.shutdown = Some(shutdown_flag.clone());
-
         // 建立讀取執行緒與切割執行緒溝通的通道 (Channel)
         // Read Thread 負責塞資料 (tx)，Slice Thread 負責拿資料 (rx)
         let (raw_data_tx, raw_data_rx) = mpsc::channel::<Vec<u8>>();
@@ -163,8 +184,9 @@ impl WSCanManager {
         // ==========================================
         let shutdown_parse = shutdown_flag.clone();
         let rx_buf_parse = self.rx_buffer.clone();
-
+        let app_parse = app.clone();
         thread::spawn(move || {
+            let global = app_parse.state::<GlobalState>();
             loop {
                 if shutdown_parse.load(Ordering::Relaxed) { break; }
 
@@ -174,7 +196,7 @@ impl WSCanManager {
                     let mut i = 0;
                     while i < buf.len()
                     {
-                        if buf[i].id == 140
+                        if buf[i].id == 0x100
                         {
                             if let Some(frame) = buf.remove(i)
                             {
@@ -187,21 +209,38 @@ impl WSCanManager {
                         }
                     }
                 }
-
+                let mut vd = global.vehicle_data.blocking_lock();
                 for frame in target_frames
                 {
-                    // --- 在這裡實作你的解析邏輯 ---
-                    trace!("捕獲 ID=140 封包！資料: {:?}", frame.data);
-                    
-                    // 例如：你可以把 frame.data 轉成你需要的 ReceivedData 格式
-                    /*
-                    if frame.dlc >= 4 {
-                        let cmd0 = frame.data[0];
-                        let cmd1 = frame.data[1];
-                        let val = u16::from_be_bytes([frame.data[2], frame.data[3]]);
-                        info!("解析 140 成功: cmd0={}, cmd1={}, val={}", cmd0, cmd1, val);
+                    if frame.data.len() < 8 
+                    {
+                        error!("ID=100 封包資料長度不足，無法解析");
+                        continue;
                     }
-                    */
+                    let index = match Self::parse_u16_be(&frame.data[1..3])
+                    {
+                        Some(idx) => idx,
+                        None => {
+                            error!("Index 解析失敗");
+                            continue; 
+                        }
+                    };
+                    let rpm = match Self::parse_f32_with_sign_be(frame.data[3], &frame.data[4..8])
+                    {
+                        Some(val) => val,
+                        None => {
+                            error!("RPM 解析失敗");
+                            continue; 
+                        }
+                    };
+                    if frame.data[0] == 0
+                    {
+                        vd.motor_upd_rpm(MotorSide::Left, RpmType::Fbk, index, rpm);
+                    }
+                    else
+                    {
+                        vd.motor_upd_rpm(MotorSide::Left, RpmType::Ref, index, rpm);
+                    }
                 }
 
                 // 避免 CPU 空轉 (Busy-waiting)，稍微休眠一下再檢查
@@ -223,7 +262,8 @@ impl WSCanManager {
 /// Tauri 指令：列出可用序列埠<br>
 /// Tauri command: list available serial ports
 #[tauri::command]
-pub async fn wscan_available() -> Result<Vec<String>, String> {
+pub async fn wscan_available() -> Result<Vec<String>, String>
+{
     let ports = SerialPortManager::available()?;
     let names = ports.into_iter().rev().map(|info| info.port_name).collect();
     info!("All available ports: {:?}", names);
@@ -233,7 +273,8 @@ pub async fn wscan_available() -> Result<Vec<String>, String> {
 /// Tauri 指令：檢查序列埠是否開啟<br>
 /// Tauri command: check if the serial port is open
 #[tauri::command]
-pub async fn wscan_check_open(app: AppHandle) -> bool {
+pub async fn wscan_check_open(app: AppHandle) -> bool
+{
     let global_state = app.state::<GlobalState>();
     let state = global_state.wscan_manager.lock().await;
     state.check_open().is_ok()
@@ -242,7 +283,8 @@ pub async fn wscan_check_open(app: AppHandle) -> bool {
 /// Tauri 指令：開啟序列埠<br>
 /// Tauri command: open the serial port
 #[tauri::command]
-pub async fn wscan_open(app: AppHandle, port_name: String) -> Result<String, String> {
+pub async fn wscan_open(app: AppHandle, port_name: String) -> Result<String, String>
+{
     let global_state = app.state::<GlobalState>();
     let mut state = global_state.wscan_manager.lock().await;
     // 1. 去除字串前後隱藏的空白或換行符號
@@ -265,7 +307,8 @@ pub async fn wscan_open(app: AppHandle, port_name: String) -> Result<String, Str
 /// Tauri 指令：關閉序列埠<br>
 /// Tauri command: close the serial port
 #[tauri::command]
-pub async fn wscan_close(app: AppHandle) -> Result<String, String> {
+pub async fn wscan_close(app: AppHandle) -> Result<String, String>
+{
     let global_state = app.state::<GlobalState>();
     let mut port = global_state.wscan_manager.lock().await;
     port.close().map_err(|e| {
@@ -275,4 +318,42 @@ pub async fn wscan_close(app: AppHandle) -> Result<String, String> {
     let message = "Close port succeed".into();
     info!("{}", message);
     Ok(message)
+}
+
+/// Tauri 指令：將馬達資料匯出成 CSV<br>
+/// Tauri command: export motor data to CSV
+#[tauri::command]
+pub async fn wscan_export(app: AppHandle) -> Result<String, String>
+{
+    let global_state = app.state::<GlobalState>();
+    
+    // 取得 vehicle_data 的非同步鎖
+    let vd = global_state.vehicle_data.lock().await;
+
+    // 指定你要求的相對路徑
+    // (溫馨提示：Tauri 預設的資料夾通常是 "src-tauri"，如果你的真的是底線，請保持原樣)
+    let file_path = "data_gen/data_log.csv";
+
+    // 安全機制：確保前置資料夾 (data_gen) 存在，如果不存在就自動建立
+    if let Some(parent) = std::path::Path::new(file_path).parent() {
+        if let Err(e) = std::fs::create_dir_all(parent) {
+            let err_msg = format!("建立資料夾失敗: {}", e);
+            error!("{}", err_msg);
+            return Err(err_msg);
+        }
+    }
+
+    // 呼叫你在 vehicle.rs 寫好的匯出函數
+    match vd.export_to_csv(file_path) {
+        Ok(_) => {
+            let msg = format!("資料成功匯出至: {}", file_path);
+            info!("{}", msg);
+            Ok(msg)
+        }
+        Err(e) => {
+            let err_msg = format!("匯出 CSV 失敗: {}", e);
+            error!("{}", err_msg);
+            Err(err_msg)
+        }
+    }
 }
