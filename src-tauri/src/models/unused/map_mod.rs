@@ -16,7 +16,7 @@ type LenType = u32;
 /// 常數：儲存檔案的資料夾路徑  
 /// Constant: folder path to store generated files
 const MAP_BASE_H: &str = include_str!(
-    concat!(env!("CARGO_MANIFEST_DIR"), "/data_gen/map/map_base.h")
+    concat!(env!("CARGO_MANIFEST_DIR"), "/__data_gen/map/map_base.h")
 );
 
 /// 結構：MapConnect，定義 pos 和 len 欄位  

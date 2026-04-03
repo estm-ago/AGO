@@ -374,9 +374,9 @@ pub async fn wscan_export(app: AppHandle) -> Result<String, String>
 
     // 指定你要求的相對路徑
     // (溫馨提示：Tauri 預設的資料夾通常是 "src-tauri"，如果你的真的是底線，請保持原樣)
-    let file_path = "data_gen/data_log.csv";
+    let file_path = "__data_gen/data_log.csv";
 
-    // 安全機制：確保前置資料夾 (data_gen) 存在，如果不存在就自動建立
+    // 安全機制：確保前置資料夾 (__data_gen) 存在，如果不存在就自動建立
     if let Some(parent) = std::path::Path::new(file_path).parent() {
         if let Err(e) = std::fs::create_dir_all(parent) {
             let err_msg = format!("建立資料夾失敗: {}", e);
