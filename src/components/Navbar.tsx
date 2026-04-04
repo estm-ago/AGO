@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from './ui/button';
 import { Wifi } from 'lucide-react';
 import { ReadyState } from 'react-use-websocket';
+import { Button, ThemeButton } from '@/components/ui/button';
 import { navRoutes } from '@/pages';
 
 interface NavbarProps {
@@ -38,13 +38,13 @@ export const Navbar: FC<NavbarProps> = (props) => {
   };
 
   return (
-    <nav className='bg-white shadow-lg border-b'>
+    <nav className='user-bg-theme-white shadow-lg border-b'>
       <div className='max-w-7xl mx-auto px-4'>
         <div className='flex justify-between items-center h-16'>
           {/* Logo/Title */}
           <div className='flex items-center'>
-            <Wifi className='w-8 h-8 text-blue-600 mr-3' />
-            <h1 className='text-xl font-bold text-gray-900'>ESP32 車輛系統</h1>
+            <Wifi className='w-8 h-8 text-blue-500 mr-3' />
+            <h1 className='text-2xl font-bold user-text-theme-gray-900'>ESP32 車輛系統</h1>
           </div>
 
           {/* Navigation Links */}
@@ -55,13 +55,14 @@ export const Navbar: FC<NavbarProps> = (props) => {
                   variant={location.pathname === `/${item.key}` ? 'default' : 'outline'}
                   className='flex items-center gap-2'
                 >
-                  <item.icon className='w-4 h-4' />
+                  <item.icon className='w-4 h-4'/>
                   {item.label}
                   {getConnectionBadge(stateMap[item.key])}
                 </Button>
               </Link>
             ))}
           </div>
+          <ThemeButton />
         </div>
       </div>
     </nav>

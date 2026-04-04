@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from './components/Layout';
+import _useWebSocket, { ReadyState } from 'react-use-websocket';
+import './theme.css';
+import { Layout } from '@/components/Layout';
 import {
   ControlRouteConfig, DataRouteConfig, RoboticRouteConfig, UsbCANRouteConfig,
   HomePage, ControlPage, DataPage, RoboticPage, UsbCANPage
-} from './pages';
-import _useWebSocket, { ReadyState } from 'react-use-websocket';
-import { WEBSOCKET_CONFIG } from './config/websocket';
+} from '@/pages';
+import { WEBSOCKET_CONFIG } from '@/config/websocket';
 import { useDataReceive, useDataStatistics } from "@/hooks";
 import { type WebCANPortConfig } from "@/types";
 

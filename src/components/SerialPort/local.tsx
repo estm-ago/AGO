@@ -118,8 +118,8 @@ const LocalCANConsole = () =>
   // 元件呈現
   // component render
   return (
-    <div className="flex flex-col space-y-2 py-2 text-xl items-center min-w-[450px]">
-      <h2> Local USB-CAN 串口測試 </h2>
+    <div className="flex flex-col space-y-2 py-2 text-xl user-text-theme-black items-start min-w-[450px]">
+      <h2> Local USB-CAN </h2>
 
       {/* 下拉選單：選擇埠 / dropdown for selecting port */}
       <div className="flex items-center space-x-2">
@@ -130,7 +130,7 @@ const LocalCANConsole = () =>
           }}
         >
           {/* 觸發按鈕 */}
-          <SelectTrigger className="w-30 border-2 border-black rounded px-1 text-base">
+          <SelectTrigger className="w-30 border-2 user-border-theme-black rounded px-1 text-base">
             <SelectValue placeholder="請選擇" />
           </SelectTrigger>
           
@@ -166,7 +166,7 @@ const LocalCANConsole = () =>
           }}
         >
           {/* 觸發按鈕 */}
-          <SelectTrigger className="w-70 border-2 border-black rounded px-1 text-base">
+          <SelectTrigger className="w-70 border-2 user-border-theme-black rounded px-1 text-base">
             <SelectValue placeholder="請選擇" />
           </SelectTrigger>
           
@@ -204,7 +204,7 @@ const LocalCANConsole = () =>
         <label className="text-lg">收發紀錄：
           <textarea
             // 加入了寬度、邊框、一點灰底(提示唯讀)，以及 resize-y 允許垂直拉伸
-            className="w-full text-2xl min-h-[4em] min-w-96 border-2 border-black rounded p-2 focus:outline-none resize-y"
+            className="w-full text-2xl min-h-[4em] min-w-96 border-2 user-border-theme-black rounded p-2 focus:outline-none resize-y"
             value={response || ""}
             readOnly
           />

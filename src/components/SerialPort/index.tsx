@@ -9,8 +9,8 @@ const CANConsole: FC<WebCANConsoleProps> = (props) =>
 {
   return (
     <>
-      <WebCANConsole {...props}/>
       <LocalCANConsole/>
+      <WebCANConsole {...props}/>
     </>
   );
 };
