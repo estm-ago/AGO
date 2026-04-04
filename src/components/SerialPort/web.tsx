@@ -156,9 +156,6 @@ const WebCANConsole: FC<WebCANConsoleProps> = ({ CANPortConfig, setCANPortConfig
             onClick={handleConnect}
           > 選擇 Port 並連線 </button>
         )}
-      </div>
-
-      <div style={{ marginBottom: "0.5rem" }}>
         <label>
           傳送至：
           <input

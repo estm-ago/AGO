@@ -3,14 +3,14 @@ import {
   type WebCANConsoleProps,
 } from '@/types';
 import WebCANConsole from "./web";
-import UartPortOCComp from "./local";
+import LocalCANConsole from "./local";
 
 const CANConsole: FC<WebCANConsoleProps> = (props) =>
 {
   return (
     <>
       <WebCANConsole {...props}/>
-      <UartPortOCComp/>
+      <LocalCANConsole/>
     </>
   );
 };

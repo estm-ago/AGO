@@ -56,4 +56,46 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+interface ActionButtonProps {
+  onClick: () => void;
+  className?: string;
+  color?: "green" | "red" | "blue" | "gray";
+  disabled?: boolean;
+  children: React.ReactNode;
+}
+const ActionButton = ({ 
+  onClick,
+  className = "",
+  color = "green",
+  disabled = false,
+  children
+}: ActionButtonProps) => {
+  // 基礎樣式
+  const baseStyle = [
+    // 基本外觀與動畫
+    "border-2 rounded px-1 transition-colors",
+    // 禁用狀態 (Disabled) 的樣式
+    "disabled:opacity-50 disabled:cursor-not-allowed",
+    "disabled:border-gray-400 disabled:text-gray-400"
+  ].join(" ");
+
+  const colorVariants = {
+    green: "border-green-500 text-green-500 hover:bg-green-50",
+    red:   "border-red-500 text-red-500 hover:bg-red-50",
+    blue:  "border-blue-500 text-blue-500 hover:bg-blue-50",
+    gray:  "border-gray-500 text-gray-500 hover:bg-gray-100",
+  };
+  const colorStyle = colorVariants[color] || colorVariants.green;
+
+  return (
+    <button
+      className={`${baseStyle} ${colorStyle} ${className}`}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {children}
+    </button>
+  );
+};
+
+export { Button, buttonVariants, ActionButton }

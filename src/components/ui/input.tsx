@@ -18,4 +18,35 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   )
 }
 
-export { Input }
+interface InputNProps {
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
+  value: string;
+  disabled?: boolean;
+}
+const InputN = ({ 
+  onChange,
+  className = "",
+  value,
+  disabled = false,
+}: InputNProps) => {
+  // 基礎樣式
+  const baseStyle = [
+    // 基本外觀與動畫
+    "border-2 border-black rounded px-1 text-center text-base",
+    // 禁用狀態 (Disabled) 的樣式
+    "disabled:opacity-50 disabled:cursor-not-allowed",
+    "disabled:border-gray-400 disabled:text-gray-400"
+  ].join(" ");
+
+  return (
+    <input
+      className={`${baseStyle} ${className}`}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+    />
+  );
+};
+
+export { Input, InputN }
