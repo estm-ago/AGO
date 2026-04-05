@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { ActionButton } from "@/components/ui/button";
 import { InputN } from "@/components/ui/input";
 import {
@@ -68,23 +69,36 @@ const LocalCANConsole = () =>
     }
     fetchPorts();
   }, []);
+  
+  // 將新訊息加到原本的紀錄後面，並最多保留 50 行
+  const appendLog = (prevLog: string, newMsg: string) => {
+    const lines = prevLog ? prevLog.split("\n") : [];
+    lines.push(newMsg);
+    // 保留最後 n 行
+    return lines.slice(-100).join("\n");
+  };
 
-  // response 變化時檢查埠開啟狀態
-  // check port status when response changes
-  useEffect(() => {
-    async function checkPort() {
-      const result = await invoke<boolean>("wscan_check_open");
-      setIsOpen(result);
-    }
-    checkPort();
-  }, [response]);
+  // 設定 Tauri 事件監聽器
+useEffect(() => {
+    const unlistenPromise = listen<{ id: number; hex_data: string }>(
+      "wscan-response",
+      (event) => {
+        const { id, hex_data } = event.payload;
+        const logMsg = `[RX-L] ID: ${id.toString(16).toUpperCase().padStart(4, '0')} | Data: ${hex_data}`;
+        setResponse((prev) => appendLog(prev, logMsg));
+      }
+    );
+    // 清理函式
+    return () => {
+      unlistenPromise.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
 
   // openPort：呼叫後端開埠
   // call backend to open port
   const openPort = async () => {
     const result = await invoke("wscan_open", { portName: selectedPort });
-    const message = `${result}`;
-    setResponse(message);
+    setResponse((prev) => appendLog(prev, `[Sys-L] ${result}`));
     setIsOpen(true);
   };
 
@@ -92,15 +106,13 @@ const LocalCANConsole = () =>
   // call backend to close port
   const closePort = async () => {
     const result = await invoke("wscan_close");
-    const message = `${result}`;
-    setResponse(message);
+    setResponse((prev) => appendLog(prev, `[Sys-L] ${result}`));
     setIsOpen(false);
   };
 
   const exportCSV = async () => {
     const result = await invoke("wscan_export");
-    const message = `${result}`;
-    setResponse(message);
+    setResponse((prev) => appendLog(prev, `[Sys-L] ${result}`));
   };
 
   const handleSend = async () => {
@@ -108,17 +120,17 @@ const LocalCANConsole = () =>
       // 呼叫 Rust 後端指令
       const result = await invoke("wscan_send", { id: input_adr, data: input_msg });
       // 將成功訊息顯示在畫面上
-      setResponse(`${result}`);
+      setResponse((prev) => appendLog(prev, `[TX-L] ${result}`));
     } catch(err: any) {
       // 若後端回傳 Err，捕捉並顯示錯誤訊息
-      setResponse(`送出失敗: ${err?.message ?? String(err)}`);
+      setResponse((prev) => appendLog(prev, `[TX-L] Err: ${err?.message ?? String(err)}`));
     }
   };
   
   // 元件呈現
   // component render
   return (
-    <div className="flex flex-col space-y-2 py-2 text-xl user-text-theme-black items-start min-w-[450px]">
+    <div className="flex flex-col space-y-2 py-2 text-xl own-text-black items-start min-w-[450px]">
       <h2> Local USB-CAN </h2>
 
       {/* 下拉選單：選擇埠 / dropdown for selecting port */}
@@ -130,7 +142,7 @@ const LocalCANConsole = () =>
           }}
         >
           {/* 觸發按鈕 */}
-          <SelectTrigger className="w-30 border-2 user-border-theme-black rounded px-1 text-base">
+          <SelectTrigger className="w-30 border-2 own-border-black-gray rounded px-1 text-base">
             <SelectValue placeholder="請選擇" />
           </SelectTrigger>
           
@@ -166,7 +178,7 @@ const LocalCANConsole = () =>
           }}
         >
           {/* 觸發按鈕 */}
-          <SelectTrigger className="w-70 border-2 user-border-theme-black rounded px-1 text-base">
+          <SelectTrigger className="w-70 border-2 own-border-black-gray rounded px-1 text-base">
             <SelectValue placeholder="請選擇" />
           </SelectTrigger>
           
@@ -203,8 +215,9 @@ const LocalCANConsole = () =>
       <div className="w-4/5">
         <label className="text-lg">收發紀錄：
           <textarea
-            // 加入了寬度、邊框、一點灰底(提示唯讀)，以及 resize-y 允許垂直拉伸
-            className="w-full text-2xl min-h-[4em] min-w-96 border-2 user-border-theme-black rounded p-2 focus:outline-none resize-y"
+            className="
+              w-full text-base min-h-[4em] min-w-96 border-2 own-border-black-gray
+              rounded p-2 focus:outline-none resize-y"
             value={response || ""}
             readOnly
           />

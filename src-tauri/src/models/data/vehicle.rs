@@ -1,5 +1,4 @@
 use std::{fs::File, path::Path, io::Write};
-use log::trace;
 use super::motor::MotorData;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -49,7 +48,6 @@ impl VehicleDatas {
 
         if let Some(data) = self.datas.get_mut(tick as usize % len)
         {
-            trace!("Parsed frame ID=100, index={}", tick);
             data.tick = tick;
             
             let motor = match side {

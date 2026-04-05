@@ -12,9 +12,10 @@ export const VehicleHeader: FC<VehicleHeaderProps> = ({ connectionStatus }) => {
   const ConnectionIcon = connectionStatus.icon;
 
   return (
-    <Card className='bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'>
+    // bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200
+    <Card className='own-bg-white own-border-black mb-4'>
       <CardHeader className='pb-3'>
-        <CardTitle className='flex items-center justify-between text-2xl font-bold text-gray-800'>
+        <CardTitle className='flex items-center justify-between text-2xl font-bold user-text-theme-gray-800'>
           <span className='flex items-center gap-2'>
             <Settings className='w-6 h-6' />
             車輛遙控系統

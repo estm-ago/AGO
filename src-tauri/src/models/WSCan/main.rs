@@ -5,7 +5,8 @@ use std::{
     collections::VecDeque, io::ErrorKind, sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}, thread, time::Duration
 };
 use log::{error, info, trace};
-use tauri::{AppHandle, Manager};
+use serde::Serialize;
+use tauri::{AppHandle, Manager, Emitter};
 use crate::{
     models::{
         serial_port::SerialPortManager,
@@ -14,8 +15,11 @@ use crate::{
     GlobalState
 };
 
-/// 內部序列埠管理結構 <br>
-/// Internal struct for managing serial port operations
+#[derive(Clone, Serialize)]
+struct FramePayload {
+    id: u16,
+    hex_data: String, // 直接把 byte 轉成字串傳給前端，前端最省事
+}
 pub struct WSCanManager
 {
     port: SerialPortManager,
@@ -122,6 +126,7 @@ impl WSCanManager {
         // ==========================================
         let shutdown_slice = shutdown_flag.clone();
         let rx_buf_slice = self.rx_buffer.clone();
+        let app_slice = app.clone();
         thread::spawn(move || {
             let mut pending_buffer: Vec<u8> = Vec::with_capacity(4096);
 
@@ -147,9 +152,20 @@ impl WSCanManager {
                             match WSCanFrame::decode(&frame_bytes)
                             {
                                 Ok(frame) => {
-                                    trace!("Frame decoded, ID: {}", frame.id);
                                     if let Ok(mut buf) = rx_buf_slice.lock()
                                     {
+                                        trace!("Decoded WSCanFrame: ID={}, Data={:02X?}", frame.id, frame.data);
+                                        let hex_data = frame.data
+                                            .iter()
+                                            .map(|b| format!("{:02X}", b))
+                                            .collect::<Vec<String>>()
+                                            .join(" ");
+                                        let payload = FramePayload {
+                                            id: frame.id,
+                                            hex_data,
+                                        };
+                                        let _ = app_slice.emit("wscan-response", payload);
+
                                         buf.push_back(frame);
                                     }
                                 }

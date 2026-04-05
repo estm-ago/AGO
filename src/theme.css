@@ -4,23 +4,27 @@
 
 /* 自己定義專屬的 Tailwind Class */
 @layer utilities {
-  .user-text-theme-black {
+  .own-text-black {
     @apply text-black dark:text-gray-200;
   }
 
-  .user-text-theme-gray-900 {
+  .own-text-gray-900 {
     @apply text-gray-900 dark:text-gray-100;
   }
   
-  .user-text-theme-gray-600 {
+  .own-text-gray-600 {
     @apply text-gray-600 dark:text-gray-400;
   }
 
-  .user-bg-theme-white {
+  .own-bg-white {
     @apply bg-white dark:bg-black;
   }
 
-  .user-border-theme-black {
+  .own-border-black {
+    @apply border-black dark:border-white;
+  }
+
+  .own-border-black-gray {
     @apply border-black dark:border-gray-400;
   }
 }

@@ -33,7 +33,7 @@ const InputN = ({
   // 基礎樣式
   const baseStyle = [
     // 基本外觀與動畫
-    "border-2 user-border-theme-black rounded px-1 text-center text-base",
+    "border-2 own-border-black-gray rounded px-1 text-center text-base",
     // 禁用狀態 (Disabled) 的樣式
     "disabled:opacity-50 disabled:cursor-not-allowed",
     "disabled:border-gray-400 disabled:text-gray-400"

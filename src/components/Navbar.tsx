@@ -38,13 +38,13 @@ export const Navbar: FC<NavbarProps> = (props) => {
   };
 
   return (
-    <nav className='user-bg-theme-white shadow-lg border-b'>
+    <nav className='own-bg-white shadow-lg border-b'>
       <div className='max-w-7xl mx-auto px-4'>
         <div className='flex justify-between items-center h-16'>
           {/* Logo/Title */}
           <div className='flex items-center'>
             <Wifi className='w-8 h-8 text-blue-500 mr-3' />
-            <h1 className='text-2xl font-bold user-text-theme-gray-900'>ESP32 車輛系統</h1>
+            <h1 className='text-2xl font-bold own-text-gray-900'>ESP32 車輛系統</h1>
           </div>
 
           {/* Navigation Links */}
