@@ -1,19 +1,14 @@
 pub struct WSCanFrame {
     /// 是否為 29-bit 擴展 ID（true = extended, false = standard 11-bit）
     pub extended: bool,
-
-    /// Remote Transmission Request（true = RTR frame）
-    pub rtr: bool,
-
     /// CAN ID（0x000 ~ 0x7FF or 0x1FFFFFFF）
-    pub id: u16,
-
-    /// 資料內容，實際長度應該等於 dlc（0~8 bytes）
-    pub data: Vec<u8>,
-
+    pub id: u32,
     /// Data Length Code，0 ~ 8
     pub dlc: u8,
-
+    /// 資料內容，實際長度應該等於 dlc（0~8 bytes）
+    pub data: Vec<u8>,
+    /// Remote Transmission Request（true = RTR frame）
+    pub rtr: bool,
     /// 是否為錯誤 frame（如 bus error）
     pub error: bool,
 }
@@ -33,9 +28,7 @@ impl WSCanFrame {
 
         // 處理 ID (Little-endian 轉換)
         let id_bytes = self.id.to_le_bytes();
-        packet[5..7].copy_from_slice(&id_bytes);
-        packet[7] = 0x00;
-        packet[8] = 0x00;
+        packet[5..9].copy_from_slice(&id_bytes);
 
         // 處理 DLC (限制在 0~8 之間)
         let dlc = self.dlc.clamp(0, 8);
@@ -89,9 +82,9 @@ impl WSCanFrame {
         let rtr = packet[4] == 0x02;
 
         // 還原 ID (從 Little-endian 轉回 u32)
-        let mut id_bytes = [0u8; 2];
-        id_bytes.copy_from_slice(&packet[5..7]);
-        let id = u16::from_le_bytes(id_bytes);
+        let mut id_bytes = [0u8; 4];
+        id_bytes[..4].copy_from_slice(&packet[5..9]);
+        let id = u32::from_le_bytes(id_bytes);
 
         // 還原 DLC
         let dlc = packet[9].clamp(0, 8);

@@ -17,7 +17,7 @@ use crate::{
 
 #[derive(Clone, Serialize)]
 struct FramePayload {
-    id: u16,
+    id: u32,
     hex_data: String, // 直接把 byte 轉成字串傳給前端，前端最省事
 }
 pub struct WSCanManager
@@ -70,12 +70,12 @@ impl WSCanManager {
             .collect() // collect 會自動處理 Result，如果其中一個 map 失敗，整個就會回傳 Err
     }
 
-    /// 將單一十六進位字串轉換為 u16
-    fn hex_to_uint16(hex_str: &str) -> Result<u16, String>
+    /// 將單一十六進位字串轉換為 u32
+    fn hex_to_uint32(hex_str: &str) -> Result<u32, String>
     {
         let trimmed = hex_str.trim();
-        u16::from_str_radix(trimmed, 16)
-            .map_err(|_| format!("非法的 16 位元十六進位數值: \"{}\"", trimmed))
+        u32::from_str_radix(trimmed, 16)
+            .map_err(|_| format!("非法的 32 位元十六進位數值: \"{}\"", trimmed))
     }
 
     pub fn open(
@@ -251,7 +251,7 @@ impl WSCanManager {
                         error!("ID=100 封包資料長度不足，無法解析");
                         continue;
                     }
-                    let index = match Self::parse_u16_be(&frame.data[1..3])
+                    let index = match Self::parse_u16_be(&frame.data[..2])
                     {
                         Some(idx) => idx,
                         None => {
@@ -267,7 +267,7 @@ impl WSCanManager {
                             continue; 
                         }
                     };
-                    if frame.data[0] == 0
+                    if frame.data[2] == 0
                     {
                         vd.motor_upd_rpm(MotorSide::Left, RpmType::Fbk, index, rpm);
                     }
@@ -294,14 +294,17 @@ impl WSCanManager {
 
     pub fn send(&mut self, id: String, data: String) -> Result<(), String>
     {
-        let _id = Self::hex_to_uint16(&id).map_err(|e| e.to_string())?;
+        let _id = Self::hex_to_uint32(&id).map_err(|e| e.to_string())?;
+        if _id > 0x1FFFFFFF {
+            return Err(format!("ID 超出範圍 (0x000 ~ 0x1FFFFFFF): \"{}\"", id));
+        }
         let mut _data = Self::hex_string_to_bytes(&data).map_err(|e| e.to_string())?;
         _data.truncate(8);
         let frame = WSCanFrame {
             id: _id,
             dlc: _data.len() as u8,
             data: _data,
-            extended: false,
+            extended: true,
             rtr: false,
             error: false
         };
