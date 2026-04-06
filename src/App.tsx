@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import _useWebSocket, { ReadyState } from 'react-use-websocket';
-import './theme.css';
+import './index.css';
 import { Layout } from '@/components/Layout';
 import {
   ControlRouteConfig, DataRouteConfig, RoboticRouteConfig, UsbCANRouteConfig,

@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     watch: {
       // 告訴 Vite 忽略 __data_gen 資料夾下的所有檔案變動
-      ignored: ["**/src-tauri/__data_gen/**"], 
+      ignored: ["**/__data_gen/**"], 
     },
   },
 });
