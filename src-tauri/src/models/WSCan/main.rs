@@ -269,11 +269,11 @@ impl WSCanManager {
                     };
                     if frame.data[2] == 0
                     {
-                        vd.motor_upd_rpm(MotorSide::Left, RpmType::Fbk, index, rpm);
+                        vd.motor_upd_rpm(MotorSide::Left, RpmType::Fbk, index as u32, rpm);
                     }
                     else
                     {
-                        vd.motor_upd_rpm(MotorSide::Left, RpmType::Ref, index, rpm);
+                        vd.motor_upd_rpm(MotorSide::Left, RpmType::Ref, index as u32, rpm);
                     }
                 }
 
@@ -358,7 +358,7 @@ pub async fn wscan_open(app: AppHandle, port_name: String) -> Result<String, Str
     }
     state.open(app.clone(), &clean_port_name, 2_000_000).map_err(|e| {
         error!("{}", e);
-        e.clone()
+        e
     })?;
     let _msg = format!("Open port succeed: {}", clean_port_name);
     info!("{}", _msg);
@@ -374,7 +374,7 @@ pub async fn wscan_close(app: AppHandle) -> Result<String, String>
     let mut state = global_state.wscan_manager.lock().await;
     state.close().map_err(|e| {
         error!("{}", e);
-        e.clone()
+        e
     })?;
     let message = "Close port succeed".into();
     info!("{}", message);

@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const LocalCANConsole = () =>
+const FdCANConsole = () =>
 {
   const COMMAND_OPTIONS = [
     { id:"140", value: "FF 00" },
@@ -20,15 +20,6 @@ const LocalCANConsole = () =>
     { id:"140", value: "02 00 42 8C 00 00" },
   ];
 
-  // ports：可用埠清單
-  // list of available ports
-  const [ports, setPorts] = useState<string[]>([]);
-  // selectedPort：目前選中的埠 / currently selected port
-  const [selectedPort, setSelectPort] = useState(
-    () => localStorage.getItem("selectedPort") || ""
-  );
-  // isOpen：埠是否已開啟
-  // whether the port is open
   const [isOpen, setIsOpen] = useState(false);
   // response：後端命令回傳訊息
   // backend command response message
@@ -37,40 +28,8 @@ const LocalCANConsole = () =>
   );
   const [input_adr, setInputAdr] = useState<string>(COMMAND_OPTIONS[0].id);
   const [input_msg, setInputMsg] = useState<string>(COMMAND_OPTIONS[0].value);
-  
-  // 同步 selectedPort 到 localStorage
-  // sync selectedPort to localStorage
-  useEffect(() => {
-    localStorage.setItem("selectedPort", selectedPort);
-  }, [selectedPort]);
 
-  // 同步 response 到 sessionStorage
-  // sync response to sessionStorage
-  useEffect(() => {
-    sessionStorage.setItem("OCResponse", response);
-  }, [response]);
-
-  // 初始化時載入可用埠
-  // fetch available ports on mount
-  useEffect(() => {
-    async function fetchPorts() {
-      try {
-        const list = await invoke<string[]>("wscan_available");
-        setPorts(list);
-        const currentSelected = localStorage.getItem("selectedPort") || "";
-        if (!currentSelected || !list.includes(currentSelected)) {
-          setSelectPort(list.length > 0 ? list[0] : "");
-        } else {
-          setSelectPort(currentSelected);
-        }
-      } catch (error) {
-        console.error("取得可用埠失敗:", error);
-      }
-    }
-    fetchPorts();
-  }, []);
-  
-  // 將新訊息加到原本的紀錄後面，並最多保留 50 行
+  // 將新訊息加到原本的紀錄後面
   const appendLog = (prevLog: string, newMsg: string) => {
     const lines = prevLog ? prevLog.split("\n") : [];
     lines.push(newMsg);
@@ -78,13 +37,56 @@ const LocalCANConsole = () =>
     return lines.slice(-100).join("\n");
   };
 
+  const openDevice = async () => {
+    try
+    {
+      const result: any = await invoke("wsfdcan_open");
+      setResponse((prev) => appendLog(prev, `[Sys] ${result}`));
+      setIsOpen(true);
+    }
+    catch (error)
+    {
+      setResponse((prev) => appendLog(prev, `[Sys] ${error}`));
+    }
+  };
+
+  const closeDevice = async () => {
+    try
+    {
+      const result = await invoke("wsfdcan_close");
+      setResponse((prev) => appendLog(prev, `[Sys] ${result}`));
+      setIsOpen(false);
+    }
+    catch (error)
+    {
+      setResponse((prev) => appendLog(prev, `[Sys] ${error}`));
+    }
+  };
+
+  const exportCSV = async () => {
+    const result = await invoke("wscan_export");
+    setResponse((prev) => appendLog(prev, `[Sys] ${result}`));
+  };
+
+  const handleSend = async () => {
+    try {
+      // 呼叫 Rust 後端指令
+      const result = await invoke("wsfdcan_send", { id: input_adr, data: input_msg });
+      // 將成功訊息顯示在畫面上
+      setResponse((prev) => appendLog(prev, `[TX] ${result}`));
+    } catch(err: any) {
+      // 若後端回傳 Err，捕捉並顯示錯誤訊息
+      setResponse((prev) => appendLog(prev, `[TX] Err: ${err?.message ?? String(err)}`));
+    }
+  };
+
   // 設定 Tauri 事件監聽器
-useEffect(() => {
+  useEffect(() => {
     const unlistenPromise = listen<{ id: number; hex_data: string }>(
-      "wscan-response",
+      "wsfdcan-response",
       (event) => {
         const { id, hex_data } = event.payload;
-        const logMsg = `[RX-L] ID: ${id.toString(16).toUpperCase().padStart(4, '0')} | Data: ${hex_data}`;
+        const logMsg = `[RX] ID: ${id.toString(16).toUpperCase().padStart(4, '0')} | Data: ${hex_data}`;
         setResponse((prev) => appendLog(prev, logMsg));
       }
     );
@@ -94,72 +96,17 @@ useEffect(() => {
     };
   }, []);
 
-  // openPort：呼叫後端開埠
-  // call backend to open port
-  const openPort = async () => {
-    const result = await invoke("wscan_open", { portName: selectedPort });
-    setResponse((prev) => appendLog(prev, `[Sys-L] ${result}`));
-    setIsOpen(true);
-  };
-
-  // closePort：呼叫後端關埠
-  // call backend to close port
-  const closePort = async () => {
-    const result = await invoke("wscan_close");
-    setResponse((prev) => appendLog(prev, `[Sys-L] ${result}`));
-    setIsOpen(false);
-  };
-
-  const exportCSV = async () => {
-    const result = await invoke("wscan_export");
-    setResponse((prev) => appendLog(prev, `[Sys-L] ${result}`));
-  };
-
-  const handleSend = async () => {
-    try {
-      // 呼叫 Rust 後端指令
-      const result = await invoke("wscan_send", { id: input_adr, data: input_msg });
-      // 將成功訊息顯示在畫面上
-      setResponse((prev) => appendLog(prev, `[TX-L] ${result}`));
-    } catch(err: any) {
-      // 若後端回傳 Err，捕捉並顯示錯誤訊息
-      setResponse((prev) => appendLog(prev, `[TX-L] Err: ${err?.message ?? String(err)}`));
-    }
-  };
-  
-  // 元件呈現
-  // component render
   return (
     <div className="flex flex-col space-y-2 py-2 text-xl own-text-black items-start min-w-[450px]">
-      <h2> Local USB-CAN </h2>
+      <h2> USB-CAN-FD </h2>
 
       {/* 下拉選單：選擇埠 / dropdown for selecting port */}
       <div className="flex items-center space-x-2">
-        <Select 
-          value={selectedPort} 
-          onValueChange={(val) => {
-            setSelectPort(val);
-          }}
-        >
-          {/* 觸發按鈕 */}
-          <SelectTrigger className="w-30 border-2 own-border-black-gray rounded px-1 text-base">
-            <SelectValue placeholder="請選擇" />
-          </SelectTrigger>
-          
-          {/* 展開內容 */}
-          <SelectContent>
-            {ports.map((opt, index) => (
-              <SelectItem key={index} value={opt}>
-                {opt}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
         {/* 根據 isOpen 顯示 Open/Close 按鈕 / toggle Open/Close button based on isOpen */}
         {isOpen ? (
-          <ActionButton className="w-20 text-lg h-9" color="red" onClick={closePort}> Close </ActionButton>
+          <ActionButton className="w-20 text-lg h-9" color="red" onClick={closeDevice}> Close </ActionButton>
         ) : (
-          <ActionButton className="w-20 text-lg h-9" color="green" onClick={openPort}> Open </ActionButton>
+          <ActionButton className="w-20 text-lg h-9" color="green" onClick={openDevice}> Open </ActionButton>
         )}
         <ActionButton className="w-15 text-lg h-9" color="blue" onClick={exportCSV}> CSV </ActionButton>
       </div>
@@ -225,6 +172,6 @@ useEffect(() => {
       </div>
     </div>
   );
-};
+}
 
-export default LocalCANConsole;
+export default FdCANConsole;

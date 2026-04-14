@@ -4,6 +4,8 @@ pub mod data;
 pub mod serial_port;
 #[path = "WSCan/main.rs"]
 pub mod wscan;
+#[path = "WSFdCan/main.rs"]
+pub mod wsfdcan;
 
 pub mod directory_mod;
 pub mod log_mod;

@@ -13,15 +13,21 @@ pub enum RpmType {
     Fbk,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum IdqType {
+    Id,
+    Iq,
+}
+
 #[derive(Clone, Debug)] 
 struct VehicleData {
-    tick: u16,
+    tick: u32,
     motor_left: MotorData,
     motor_right: MotorData,
 }
 
 pub struct VehicleDatas {
-    tick: u16,
+    tick: u32,
     datas: Vec<VehicleData>,
 }
 impl VehicleDatas {
@@ -41,7 +47,7 @@ impl VehicleDatas {
         }
     }
 
-    pub fn motor_upd_rpm(&mut self, side: MotorSide, rpm_type: RpmType, tick: u16, val: f32)
+    pub fn motor_upd_rpm(&mut self, side: MotorSide, rpm_type: RpmType, tick: u32, val: f32)
     {
         let len = self.datas.len();
         if len == 0 { return; }
@@ -66,7 +72,7 @@ impl VehicleDatas {
         }
     }
 
-    pub fn motor_get_rpm(&self, side: MotorSide, rpm_type: RpmType, tick: u16) -> Option<f32>
+    pub fn motor_get_rpm(&self, side: MotorSide, rpm_type: RpmType, tick: u32) -> Option<f32>
     {
         let len = self.datas.len();
         if len == 0 { return None; }
@@ -88,12 +94,37 @@ impl VehicleDatas {
         })
     }
 
+    pub fn motor_upd_idq(&mut self, side: MotorSide, idq_type: IdqType, tick: u32, val: f32)
+    {
+        let len = self.datas.len();
+        if len == 0 { return; }
+
+        if let Some(data) = self.datas.get_mut(tick as usize % len)
+        {
+            data.tick = tick;
+            
+            let motor = match side {
+                MotorSide::Left => &mut data.motor_left,
+                MotorSide::Right => &mut data.motor_right,
+            };
+            match idq_type {
+                IdqType::Id => motor.upd_foc_id(val),
+                IdqType::Iq => motor.upd_foc_iq(val),
+            }
+        }
+
+        if self.tick < tick
+        {
+            self.tick = tick;
+        }
+    }
+
     pub fn export_to_csv<P: AsRef<Path>>(&self, file_path: P) -> std::io::Result<()> {
         // 建立檔案 (如果存在會覆蓋)
         let mut file = File::create(file_path)?;
 
         // 寫入 CSV 標題列 (Header)
-        writeln!(file, "tick,left_rpm_ref,left_rpm_fbk,right_rpm_ref,right_rpm_fbk")?;
+        writeln!(file, "tick,left_rpm_ref,left_rpm_fbk,left_id,left_iq,right_rpm_ref,right_rpm_fbk,right_id,right_iq")?;
 
         // 因為 datas 是「環形緩衝區」，資料在記憶體中的順序可能與時間相反。
         // 我們先過濾出真正有被寫入過的資料，並將其重新照時間排序。
@@ -109,12 +140,16 @@ impl VehicleDatas {
         for data in valid_data {
             writeln!(
                 file,
-                "{},{},{},{},{}",
+                "{},{},{},{},{},{},{},{},{}",
                 data.tick,
                 data.motor_left.get_rpm_ref(),
                 data.motor_left.get_rpm_fbk(),
+                data.motor_left.get_foc_id(),
+                data.motor_left.get_foc_iq(),
                 data.motor_right.get_rpm_ref(),
-                data.motor_right.get_rpm_fbk()
+                data.motor_right.get_rpm_fbk(),
+                data.motor_right.get_foc_id(),
+                data.motor_right.get_foc_iq(),
             )?;
         }
 

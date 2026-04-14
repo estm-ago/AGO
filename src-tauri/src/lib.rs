@@ -6,7 +6,7 @@ use tokio::sync::{Mutex as AsyncMutex};
 use log::LevelFilter;
 use crate::models::{
     directory_mod, log_mod, matlab_mod::{self},
-    wscan, data,
+    wscan, data, wsfdcan,
 };
 // use crate::models::{
 //     loop_cmd_mod, map_mod, 
@@ -27,6 +27,7 @@ pub const GENERATE_BASE_FOLDER_PATH: &str = "generate_base";
 pub struct GlobalState {
     pub root_path:                  SyncMutex <PathBuf>,
     pub wscan_manager:              AsyncMutex<wscan::WSCanManager>,
+    pub wsfdcan_manager:            AsyncMutex<wsfdcan::WSFdCanManager>,
     pub vehicle_data:               AsyncMutex<data::vehicle::VehicleDatas>,
     pub matlab_engine:              SyncMutex <matlab_mod::MatlabEngine>,
 
@@ -47,6 +48,7 @@ pub fn run() {
     let global_state = GlobalState {
         root_path:                  SyncMutex ::new(PathBuf::new()),
         wscan_manager:              AsyncMutex::new(wscan::WSCanManager::new(20, 20)),
+        wsfdcan_manager:            AsyncMutex::new(wsfdcan::WSFdCanManager::new(20, 20)),
         vehicle_data:               AsyncMutex::new(data::vehicle::VehicleDatas::new(6000)),
         matlab_engine:              SyncMutex ::new(matlab_mod::MatlabEngine::new()),
 
@@ -71,6 +73,10 @@ pub fn run() {
             wscan::wscan_close,
             wscan::wscan_export,
             wscan::wscan_send,
+            wsfdcan::wsfdcan_check_open,
+            wsfdcan::wsfdcan_open,
+            wsfdcan::wsfdcan_close,
+            wsfdcan::wsfdcan_send,
             // tauri_test_mod::mytest,
             // mcu_control_mod::cmd_send_spd_stop,
             // mcu_control_mod::cmd_send_spd_once,

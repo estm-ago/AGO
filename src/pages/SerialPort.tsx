@@ -1,5 +1,5 @@
 import { type FC } from 'react';
-import CANConsole from '../components/SerialPort';
+import CANConsole from '@/components/SerialPort';
 import { Cable } from 'lucide-react';
 import { type WebCANConsoleProps } from '@/types';
 
