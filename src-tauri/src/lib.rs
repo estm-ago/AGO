@@ -77,6 +77,7 @@ pub fn run() {
             wsfdcan::wsfdcan_open,
             wsfdcan::wsfdcan_close,
             wsfdcan::wsfdcan_send,
+            wsfdcan::wsfdcan_reset_data,
             // tauri_test_mod::mytest,
             // mcu_control_mod::cmd_send_spd_stop,
             // mcu_control_mod::cmd_send_spd_once,

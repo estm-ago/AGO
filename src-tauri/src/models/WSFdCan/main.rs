@@ -12,8 +12,8 @@ use fdcan_c::{
 
 use serde::Serialize;
 use std::{
-    cmp, collections::VecDeque, io::ErrorKind, mem::{self, size_of}, thread, time::Duration,
-    sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}
+    collections::VecDeque, mem::{self, size_of}, thread, time::Duration,
+    sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}}
 };
 use log::{error, info, trace};
 use tauri::{AppHandle, Manager, Emitter};
@@ -223,23 +223,44 @@ impl WSFdCanManager
     fn analyze_data(app: AppHandle, pkt: ZCAN_ReceiveFD_Data) -> Result<(), String>
     {
         let _id = Self::get_fd_id(pkt.frame.can_id);
-        if _id != 0x100 { return Ok(()); }
-        if pkt.frame.len < (size_of::<u32>() + size_of::<f32>() * 4) as u8 { return Ok(()); }
-        let global = app.state::<GlobalState>();
-        let mut vd = global.vehicle_data.blocking_lock();
+        match _id {
+            0x100 => {
+                if pkt.frame.len < (12) as u8 { return Ok(()); }
+                let global = app.state::<GlobalState>();
+                let mut vd = global.vehicle_data.blocking_lock();
 
-        let tick = Self::parse_u32_be(&pkt.frame.data[0..4]).ok_or("Failed to parse tick")?;
+                let tick = Self::parse_u32_be(&pkt.frame.data[0..4]).ok_or("Failed to parse tick")?;
 
-        let mut val = Self::parse_f32_be(&pkt.frame.data[4..8]).ok_or("Failed to parse rpm ref")?;
-        vd.motor_upd_rpm(MotorSide::Left, RpmType::Ref, tick, val);
-        val = Self::parse_f32_be(&pkt.frame.data[8..12]).ok_or("Failed to parse rpm fbk")?;
-        vd.motor_upd_rpm(MotorSide::Left, RpmType::Fbk, tick, val);
+                let mut val = Self::parse_f32_be(&pkt.frame.data[4..8]).ok_or("Failed to parse rpm ref")?;
+                vd.motor_upd_rpm(MotorSide::Left, RpmType::Ref, tick, val);
+                val = Self::parse_f32_be(&pkt.frame.data[8..12]).ok_or("Failed to parse rpm fbk")?;
+                vd.motor_upd_rpm(MotorSide::Left, RpmType::Fbk, tick, val);
+            },
+            0x101 => {
+                if pkt.frame.len < (48) as u8 { return Ok(()); }
+                let global = app.state::<GlobalState>();
+                let mut vd = global.vehicle_data.blocking_lock();
 
-        val = Self::parse_f32_be(&pkt.frame.data[12..16]).ok_or("Failed to parse idq id")?;
-        vd.motor_upd_idq(MotorSide::Left, IdqType::Id, tick, val);
-        val = Self::parse_f32_be(&pkt.frame.data[16..20]).ok_or("Failed to parse idq iq")?;
-        vd.motor_upd_idq(MotorSide::Left, IdqType::Iq, tick, val);
+                let tick = Self::parse_u32_be(&pkt.frame.data[0..4]).ok_or("Failed to parse tick")?;
 
+                let mut id_arr = [0.0f32; 5];
+                for i in 0..5 {
+                    let offset = 4 + (i * 4);
+                    id_arr[i] = Self::parse_f32_be(&pkt.frame.data[offset..offset+4])
+                        .ok_or("Failed to parse idq id")?;
+                }
+                vd.motor_upd_idq(MotorSide::Left, IdqType::Id, tick, id_arr);
+
+                let mut iq_arr = [0.0f32; 5];
+                for i in 0..5 {
+                    let offset = 24 + (i * 4);
+                    iq_arr[i] = Self::parse_f32_be(&pkt.frame.data[offset..offset+4])
+                        .ok_or("Failed to parse idq iq")?;
+                }
+                vd.motor_upd_idq(MotorSide::Left, IdqType::Iq, tick, iq_arr);
+            },
+            _ => { return Ok(()); }
+        }
         Ok(())
     }
 
@@ -247,6 +268,7 @@ impl WSFdCanManager
     {
         let shutdown_flag = Arc::new(AtomicBool::new(false));
         self.shutdown = Some(shutdown_flag.clone());
+
         let shutdown_read = shutdown_flag.clone();
         let rx_buffer_clone = self.rx_buffer.clone();
         let app_rx = app.clone();
@@ -255,9 +277,6 @@ impl WSFdCanManager
             info!("Rx Thread started");
             while !shutdown_read.load(Ordering::Relaxed)
             {
-                // CAN-FD 速度很快，建議改為 20ms ~ 50ms 輪詢一次
-                thread::sleep(Duration::from_millis(50));
-
                 // 呼叫我們剛剛改寫的 receive 靜態方法
                 match Self::receive(rx_channel)
                 {
@@ -289,9 +308,12 @@ impl WSFdCanManager
                             error!("Failed to emit event to frontend: {}", e);
                         }
                     }
-                    Ok(_) => {} // 沒收到新資料，直接忽略
+                    Ok(_) => {
+                        thread::sleep(Duration::from_millis(1));
+                    } // 沒收到新資料，直接忽略
                     Err(e) => {
                         error!("Rx Thread encountered an error: {}", e);
+                        thread::sleep(Duration::from_millis(10));
                     }
                 }
             }
@@ -390,7 +412,7 @@ impl WSFdCanManager
         transmit_data.transmit_type = 0; // 0: 正常發送
         transmit_data.frame.can_id = _id;
         transmit_data.frame.len = _data.len() as u8;
-        transmit_data.frame.flags = 0; // 1: 啟用 BRS (Bit Rate Switch) 雙波特率
+        transmit_data.frame.flags = 1; // 1: 啟用 BRS (Bit Rate Switch) 雙波特率
         
         for i in 0.._data.len() {
             transmit_data.frame.data[i] = _data[i];
@@ -424,7 +446,7 @@ pub async fn wsfdcan_open(app: AppHandle) -> Result<String, String>
         error!("{}", e);
         e
     })?;
-    state.init_channel(0, 500_000, 500_000).map_err(|e| {
+    state.init_channel(0, 1_000_000, 5_000_000).map_err(|e| {
         error!("{}", e);
         e
     })?;
@@ -464,6 +486,18 @@ pub async fn wsfdcan_send(app: AppHandle, id: String, data: String) -> Result<St
         e.clone()
     })?;
     let _msg = format!("Frame sent successfully");
+    info!("{}", _msg);
+    Ok(_msg)
+}
+
+#[tauri::command]
+pub async fn wsfdcan_reset_data(app: AppHandle) -> Result<String, String>
+{
+    let global = app.state::<GlobalState>();
+    let mut vd = global.vehicle_data.lock().await;
+    
+    vd.reset();
+    let _msg = format!("Vehicle data reset successfully");
     info!("{}", _msg);
     Ok(_msg)
 }

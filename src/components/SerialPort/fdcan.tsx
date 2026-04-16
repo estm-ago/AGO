@@ -63,6 +63,11 @@ const FdCANConsole = () =>
     }
   };
 
+  const resetData = async () => {
+    const result = await invoke("wsfdcan_reset_data");
+    setResponse((prev) => appendLog(prev, `[Sys] ${result}`));
+  }
+
   const exportCSV = async () => {
     const result = await invoke("wscan_export");
     setResponse((prev) => appendLog(prev, `[Sys] ${result}`));
@@ -108,6 +113,7 @@ const FdCANConsole = () =>
         ) : (
           <ActionButton className="w-20 text-lg h-9" color="green" onClick={openDevice}> Open </ActionButton>
         )}
+        <ActionButton className="w-15 text-lg h-9" color="blue" onClick={resetData}> RST </ActionButton>
         <ActionButton className="w-15 text-lg h-9" color="blue" onClick={exportCSV}> CSV </ActionButton>
       </div>
 
