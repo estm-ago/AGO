@@ -12,7 +12,7 @@ use fdcan_c::{
 
 use serde::Serialize;
 use std::{
-    collections::VecDeque, mem::{self, size_of}, thread, time::Duration,
+    collections::VecDeque, mem, thread, time::Duration,
     sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}}
 };
 use log::{error, info, trace};
