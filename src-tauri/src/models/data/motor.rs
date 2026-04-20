@@ -12,8 +12,8 @@ impl MotorData
     {
         Self
         {
-            rpm_ref: 0.0,
-            rpm_fbk: 0.0,
+            rpm_ref: f32::MAX,
+            rpm_fbk: f32::MAX,
             foc_id: [f32::MAX; 5],
             foc_iq: [f32::MAX; 5],
         }

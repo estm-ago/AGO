@@ -197,14 +197,16 @@ impl VehicleDatas {
 
         // 逐筆將數值寫入 CSV
         for data in valid_data {
+            let left_rpm_ref = data.motor_left.get_rpm_ref();
+            let left_rpm_fbk = data.motor_left.get_rpm_fbk();
             let left_id = data.motor_left.get_foc_id();
             let left_iq = data.motor_left.get_foc_iq();
             writeln!(
                 file,
                 "{},{},{},{},{}\n,,,{},{}\n,,,{},{}\n,,,{},{}\n,,,{},{}",
                 data.tick,
-                data.motor_left.get_rpm_ref(),
-                data.motor_left.get_rpm_fbk(),
+                fmt_val(left_rpm_ref),
+                fmt_val(left_rpm_fbk),
                 fmt_val(left_id[0]), fmt_val(left_iq[0]),
                 fmt_val(left_id[1]), fmt_val(left_iq[1]),
                 fmt_val(left_id[2]), fmt_val(left_iq[2]),
